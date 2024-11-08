@@ -4,7 +4,7 @@ import image1 from "../assets/zos.png";
 function SignUp() {
   return (
     <div className="flex justify-between">
-      <div className="bg-brand-primary w-full h-screen pt-8 sm:pt-25">
+      <div className="bg-brand-primary w-full h-full pb-8 pt-8 sm:pt-25">
         <SignUpForm />
       </div>
       <div className="hidden w-full sm:flex flex-col justify-center items-center">

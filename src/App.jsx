@@ -8,7 +8,8 @@ import Signin from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import SplashScreen from './components/SplashScreen';
 import BottomNavigation from './components/BottomNavigation';
-import Cart from './components/Cart';
+import OTPModal from './pages/test';
+import CartPage from './pages/Cart';
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -34,7 +35,8 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/signin" element={<Signin />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/cart" element={<Cart />} />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/test" element={<OTPModal />} />
 
       </Routes>
       <BottomNavigation />

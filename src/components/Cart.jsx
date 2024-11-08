@@ -14,7 +14,7 @@ function Cart() {
     email: '',
     address: '',
     city: '',
-    zipCode: '',
+    phoneNumber: '',
   });
 
   const handleDelete = (id) => {
@@ -48,7 +48,7 @@ function Cart() {
                     value={billingAddress.name}
                     onChange={handleAddressChange}
                     className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white dark:border-gray-600"
-                    placeholder="John Doe"
+                    placeholder="John"
                   />
                 </div>
 
@@ -94,13 +94,13 @@ function Cart() {
                 <div>
                   <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Zip Code</label>
                   <input
-                    type="text"
-                    id="zipCode"
-                    name="zipCode"
-                    value={billingAddress.zipCode}
+                    type="number"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    value={billingAddress.phoneNumber}
                     onChange={handleAddressChange}
                     className="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white dark:border-gray-600"
-                    placeholder="ZIP"
+                    placeholder="0900000000"
                   />
                 </div>
               </div>
@@ -135,7 +135,7 @@ function Cart() {
 
         
 
-          <button className="mt-6 w-full bg-blue-500 text-white p-3 rounded-lg text-lg font-semibold shadow-md hover:bg-blue-700 transition-colors duration-200">
+          <button className="mt-6 w-full bg-brand-primary text-white p-3 rounded-lg text-lg font-semibold shadow-md hover:bg-blue-700 transition-colors duration-200">
             Checkout
           </button>
         </>

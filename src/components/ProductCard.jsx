@@ -5,7 +5,7 @@ function ProductCard({ product }) {
       <img src={product.image} alt={product.name} className="w-full h-48 object-cover rounded-lg" />
       <h3 className="text-lg font-semibold mt-4">{product.name}</h3>
       <p className="text-primary text-xl font-bold">{product.price}</p>
-      <button className="w-full p-2 mt-4 bg-accent dark:text-white rounded-lg">Add to Cart</button>
+      <button className="w-full p-2 mt-4 bg-brand-primary text-white dark:text-white rounded-lg">Add to Cart</button>
     </div>
   );
 }

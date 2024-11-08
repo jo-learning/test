@@ -9,6 +9,7 @@ const quotes = [
 ];
 
 function SplashScreen() {
+  
 
   useEffect(() => {
     // Rotate quotes every 2 seconds

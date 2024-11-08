@@ -65,13 +65,15 @@ function SignInForm() {
           {errors.password && <p className="text-red-500 text-sm ">{errors.password}</p>}
         </div>
 
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-between mb-4">
+          <label><input type='checkbox' /> Remeber me</label>
+          
           <Link to={'/forgot-password'} className="text-blue-500 hover:underline ">
             Forgot Password?
           </Link>
         </div>
         
-        <button type="submit" className="w-full p-2 bg-primary text-black dark:text-white rounded-lg">Sign in</button>
+        <button type="submit" className="w-full p-2 bg-brand-primary text-white dark:text-white rounded-lg">Sign in</button>
         <p className="mt-4 text-center">
           Don’t have an account? <Link to={'/signup'} className="text-blue-500 hover:underline">Sign Up</Link>
         </p>

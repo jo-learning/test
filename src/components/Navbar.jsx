@@ -52,11 +52,11 @@ function Navbar() {
       </div>
       <div className="bg-gray-300 dark:bg-gray-800">
         <ul className="flex space-x-5 pl-4">
-          <li className="font-bold underline">All</li>
-          <li className="font-bold">Food</li>
-          <li className="font-bold">Clothing</li>
-          <li className="font-bold">Electronics</li>
-          <li className="font-">Beauty</li>
+          <li className="font-bold underline"><Link>All</Link></li>
+          <li className="font-bold"><Link>Food</Link></li>
+          <li className="font-bold"><Link>Clothing</Link></li>
+          <li className="font-bold"><Link>Electronics</Link></li>
+          <li className="font-"><Link>Beauty</Link></li>
         </ul>
       </div>
     </nav>
