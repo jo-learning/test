@@ -40,7 +40,7 @@ function SignInForm() {
   };
 
   return (
-    <div className="max-w-sm mx-auto p-8 bg-gray-200 dark:bg-gray-800 shadow-md rounded-lg">
+    <div className="max-w-sm  mb-10 sm:mb-0  mx-auto p-8 bg-gray-200 dark:bg-gray-800 shadow-md rounded-lg">
       <h2 className="text-2xl font-bold mb-4 text-center">Sign In</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">

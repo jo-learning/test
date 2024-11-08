@@ -1,11 +1,18 @@
-
-import SignUpForm from '../components/SignUpForm';
+import SignUpForm from "../components/SignUpForm";
+import image1 from "../assets/zos.png";
 
 function SignUp() {
   return (
-    <div className="p-6 justify-between">
-      <h1 className="text-3xl font-bold text-center mb-8">Welcome to Zoskalus Platform Store</h1>
-      <SignUpForm />
+    <div className="flex justify-between">
+      <div className="bg-brand-primary w-full h-screen pt-8 sm:pt-25">
+        <SignUpForm />
+      </div>
+      <div className="hidden w-full sm:flex flex-col justify-center items-center">
+        <img src={image1} alt="Zos" className="w-[400px] h-[400px]" />
+        <h1 className="text-3xl font-bold text-center mb-8">
+          Welcome to Zoskalus Platform Store
+        </h1>
+      </div>
     </div>
   );
 }

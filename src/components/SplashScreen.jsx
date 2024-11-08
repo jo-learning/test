@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import image1 from '../assets/zos.png';
 
 const quotes = [
   "Welcome to our eCommerce store!",
@@ -8,22 +9,21 @@ const quotes = [
 ];
 
 function SplashScreen() {
-  const [quoteIndex, setQuoteIndex] = useState(0);
 
   useEffect(() => {
     // Rotate quotes every 2 seconds
     const interval = setInterval(() => {
-      setQuoteIndex((prevIndex) => (prevIndex + 1) % quotes.length);
     }, 2000);
 
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, []);
 
   return (
-    <div className="p-6 flex items-center justify-center w-screen h-screen bg-gray-800 text-white">
-      <div className="text-center w-full">
-        <div className="loader mb-4 w-full"></div>
-        <p className="text-lg">{quotes[quoteIndex]}</p>
+    <div className="p-6 flex  items-center justify-center w-screen h-screen bg-gray-800 text-white">
+      <div className="flex flex-col text-center w-full">
+        <div className="loader mb-4 items-center flex justify-center"><img src={image1} className='w-[200px] h-[200px] items-center ' /></div>
+        
+        <p className="text-lg">{quotes[0]}</p>
       </div>
     </div>
   );

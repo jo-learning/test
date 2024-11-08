@@ -10,10 +10,11 @@ function Home() {
   return (
     <>
     <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+    <h1 className="text-3xl mt-4 font-bold text-center mb-8">Welcome to Zoskalus Platform Store</h1>
     <ImageSlider />
     <CategoryGrid />
     <div className="p-6">
-      <h1 className="text-3xl font-bold text-center mb-8">Welcome to Zoskalus Platform Store</h1>
+      
       <ProductGrid />
     </div>
     </>
