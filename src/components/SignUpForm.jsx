@@ -11,10 +11,20 @@ function SignUpForm() {
     password: "",
     confirmPassword: "",
     phone: "",
+    countryCode: "+251",
     termsAccepted: false,
   });
   const [errors, setErrors] = useState({});
   const inputRefs = useRef([]);
+
+  const countryCodes = [
+    { code: "+1", name: "US" },
+    { code: "+44", name: "UK" },
+    { code: "+91", name: "In" },
+    { code: "+251", name: "Eth" },
+    { code: "+254", name: "Ken" },
+    // Add more country codes as needed
+  ];
 
   const openModal = (e) => {
     e.preventDefault();
@@ -114,9 +124,22 @@ function SignUpForm() {
         )}
 
         <div className="flex ">
-          <p className="bg-white text-gray-800 items-center justify-center flex px-1 mr-1 rounded-lg h-[50px]">
+          {/* <p className="bg-white text-gray-800 items-center justify-center flex px-1 mr-1 rounded-lg h-[50px]">
             +251
-          </p>
+          </p> */}
+          <select
+            value={formData.countryCode}
+            onChange={(e) =>
+              setFormData({ ...formData, countryCode: e.target.value })
+            }
+            className="bg-white text-gray-800 items-center justify-center flex px-1 mr-1 rounded-lg h-[50px]"
+          >
+            {countryCodes.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.name} ({country.code})
+              </option>
+            ))}
+          </select>
           <input
             type="number"
             placeholder="900000000"

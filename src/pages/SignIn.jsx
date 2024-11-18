@@ -1,5 +1,5 @@
 import SignInForm from "../components/SignInForm";
-import image1 from "../assets/zos.png"
+import image1 from "../assets/zos.png";
 
 function Signin() {
   return (
@@ -13,10 +13,9 @@ function Signin() {
           The Fastest Food Delivery
         </h1>
       </div>
-<div className="bg-brand-primary w-full h-screen pt-8 sm:pt-28">
-<SignInForm />
-</div>
-      
+      <div className="bg-brand-primary w-full h-screen pt-8 sm:pt-28">
+        <SignInForm />
+      </div>
     </div>
   );
 }

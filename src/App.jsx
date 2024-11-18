@@ -8,7 +8,7 @@ import Signin from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import SplashScreen from './components/SplashScreen';
 import BottomNavigation from './components/BottomNavigation';
-import OTPModal from './pages/test';
+import OTPModal from './pages/otpmodal';
 import CartPage from './pages/Cart';
 
 function App() {

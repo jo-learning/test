@@ -48,7 +48,7 @@ function SignInForm() {
             type="email"
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {setEmail(e.target.value); setErrors({})}}
             className="input-field mb-1 w-full p-2 border rounded-lg"
           />
           {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
@@ -59,7 +59,7 @@ function SignInForm() {
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {setPassword(e.target.value); setErrors({})}}
             className="input-field mb-1 w-full p-2 border rounded-lg"
           />
           {errors.password && <p className="text-red-500 text-sm ">{errors.password}</p>}

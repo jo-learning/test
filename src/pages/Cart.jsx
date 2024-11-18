@@ -1,15 +1,15 @@
 
 import Navbar from '../components/Navbar';
 import { useState } from 'react';
-import Cart from '../components/Cart';
+import Table from '../components/Cart';
 
 function CartPage() {
   const [darkMode, setDarkMode] = useState(false)
   return (
-    <>
+    <div className=''>
     <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
-    <Cart />
-    </>
+    <Table />
+    </div>
     
   );
 }
