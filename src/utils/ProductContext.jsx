@@ -18,15 +18,15 @@ export const ProductProvider = ({ children }) => {
       const check = formData.some((obj) => obj.id != data.id)
       if (check) {
         setFormData((prevData) =>{
-          localStorage.setItem("tableData", JSON.stringify([...prevData, { id: data.id, price: data.price, quantity: 1 } ]));
-          return [...prevData, { id: data.id, price: data.price, quantity: 1 }]
+          localStorage.setItem("tableData", JSON.stringify([...prevData, { id: data.id, item: data.name, price: data.price, quantity: 1 } ]));
+          return [...prevData, { id: data.id, item:data.name, price: data.price, quantity: 1 }]
         }
         );
         
       }
     } else {
-      setFormData([{ id: data.id, price: data.price, quantity: 1 }]);
-      localStorage.setItem("tableData", JSON.stringify([{ id: data.id, price: data.price, quantity: 1 }]));
+      setFormData([{ id: data.id,item: data.name, price: data.price, quantity: 1 }]);
+      localStorage.setItem("tableData", JSON.stringify([{ id: data.id, item:data.name, price: data.price, quantity: 1 }]));
     }
     // console.log(data)
   };
