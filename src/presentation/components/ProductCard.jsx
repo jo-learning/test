@@ -1,5 +1,5 @@
-import CounterContext from "../utils/CartCounter";
-import ProductContext from "../utils/ProductContext";
+import CounterContext from "../../shared/utils/CartCounter";
+import ProductContext from "../../shared/utils/ProductContext";
 import { useContext, useEffect } from "react";
 
 function ProductCard({ product }) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import image1 from '../assets/zos.png';
+import image1 from '../../assets/zos.png';
 
 const quotes = [
   "Welcome to our eCommerce store!",

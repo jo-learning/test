@@ -1,33 +1,42 @@
-import { Link } from "react-router-dom";
+import { Link, redirect } from "react-router-dom";
 import { useState, useRef } from "react";
 import { BsX } from "react-icons/bs";
+import { toast } from "react-toastify";
+import { authRepository } from "../../data/repositories/authRepository";
+import { signupUser } from "../../domain/useCases/signupUser";
+import { useNavigate } from "react-router-dom";
 
 function SignUpForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", ""]);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
+    name: "",
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
-    phone: "",
-    countryCode: "+251",
+    phoneNumber: "",
+    countryCode: "251",
+    address: "",
     termsAccepted: false,
   });
   const [errors, setErrors] = useState({});
   const inputRefs = useRef([]);
 
   const countryCodes = [
-    { code: "+1", name: "US" },
-    { code: "+44", name: "UK" },
-    { code: "+91", name: "In" },
-    { code: "+251", name: "Eth" },
-    { code: "+254", name: "Ken" },
+    { code: "251", name: "Eth" },
+    { code: "1", name: "US" },
+    { code: "44", name: "UK" },
+    { code: "91", name: "In" },
+    { code: "254", name: "Ken" },
     // Add more country codes as needed
   ];
 
   const openModal = (e) => {
     e.preventDefault();
+    toast.success("test");
     if (validateForm()) {
       setIsOpen(true);
     }
@@ -35,11 +44,12 @@ function SignUpForm() {
 
   const closeModal = () => {
     setIsOpen(false);
-    setOtp(["", "", "", "", ""]); // Clear the OTP fields when closing
+    setOtp(["", "", "", "", ""]); // Clear the OTP fields when
   };
 
   const handleChange = (value, index) => {
-    if (/^\d*$/.test(value)) { // Only allow digits
+    if (/^\d*$/.test(value)) {
+      // Only allow digits
       const newOtp = [...otp];
       newOtp[index] = value;
       setOtp(newOtp);
@@ -62,16 +72,51 @@ function SignUpForm() {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    validateForm();
+    if (!validateForm()){
+      return;
+    }
+    const data = await signupUser(
+      {
+        name: formData.name,
+        email: formData.email,
+        username: formData.username,
+        phoneNumber: formData.countryCode + formData.phoneNumber,
+        address: formData.address,
+        password: formData.password,
+      },
+      authRepository
+    );
+    console.log(data);
+    if (data.success) {
+      toast.success(data.msg);
+      
+      if (data.data.role == 'user'){
+        navigate('/signin');
+      }
+    } else {
+      toast.error(data.msg);
+      
+    }
+    setLoading(false)
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
+    if (!formData.name) newErrors.name = "name is required";
     if (!formData.username) newErrors.username = "Username is required";
     if (!formData.email) newErrors.email = "Email is required";
+    if (!formData.address) newErrors.address = "Address is required";
     if (!formData.password) newErrors.password = "Password is required";
     if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
-    if (!/^[97]\d{9}$/.test(formData.phone))
-      newErrors.phone = "Phone number must be 10 digits and start with 9 or 7";
+    if (!/^[97]\d{8}$/.test(formData.phoneNumber))
+      newErrors.phoneNumber =
+        "Phone number must be 10 digits and start with 9 or 7";
     if (!formData.termsAccepted)
       newErrors.termsAccepted = "You must accept the terms and conditions";
 
@@ -82,22 +127,41 @@ function SignUpForm() {
   return (
     <div className="max-w-sm mb-10 sm:mb-0 mx-auto p-8 bg-gray-200 dark:bg-gray-800 shadow-md rounded-lg">
       <h2 className="text-2xl font-bold mb-4 flex justify-center">Sign Up</h2>
-      <form onSubmit={openModal}>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="name"
+          className="input-field mb-3"
+          value={formData.name}
+          onChange={(e) => {
+            setFormData({ ...formData, name: e.target.value });
+            setErrors({});
+          }}
+        />
+        {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
         <input
           type="text"
           placeholder="Username"
           className="input-field mb-3"
           value={formData.username}
-          onChange={(e) => {setFormData({ ...formData, username: e.target.value }); setErrors({})}}
+          onChange={(e) => {
+            setFormData({ ...formData, username: e.target.value });
+            setErrors({});
+          }}
         />
-        {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+        {errors.username && (
+          <p className="text-red-500 text-sm">{errors.username}</p>
+        )}
 
         <input
           type="email"
           placeholder="Email"
           className="input-field mb-3"
           value={formData.email}
-          onChange={(e) => {setFormData({ ...formData, email: e.target.value }); setErrors({})}}
+          onChange={(e) => {
+            setFormData({ ...formData, email: e.target.value });
+            setErrors({});
+          }}
         />
         {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
 
@@ -106,18 +170,24 @@ function SignUpForm() {
           placeholder="Password"
           className="input-field mb-3"
           value={formData.password}
-          onChange={(e) => {setFormData({ ...formData, password: e.target.value }); setErrors({})}}
+          onChange={(e) => {
+            setFormData({ ...formData, password: e.target.value });
+            setErrors({});
+          }}
         />
-        {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+        {errors.password && (
+          <p className="text-red-500 text-sm">{errors.password}</p>
+        )}
 
         <input
           type="password"
           placeholder="Confirm Password"
           className="input-field mb-3"
           value={formData.confirmPassword}
-          onChange={(e) =>
-            {setFormData({ ...formData, confirmPassword: e.target.value }); setErrors({})}
-          }
+          onChange={(e) => {
+            setFormData({ ...formData, confirmPassword: e.target.value });
+            setErrors({});
+          }}
         />
         {errors.confirmPassword && (
           <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
@@ -144,23 +214,46 @@ function SignUpForm() {
             type="number"
             placeholder="900000000"
             className="input-field mb-3 "
-            value={formData.phone}
-            onChange={(e) => {setFormData({ ...formData, phone: e.target.value }); setErrors({})}}
+            value={formData.phoneNumber}
+            onChange={(e) => {
+              setFormData({ ...formData, phoneNumber:  + e.target.value });
+              setErrors({});
+            }}
           />
         </div>
-        {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+        {errors.phoneNumber && (
+          <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+        )}
+
+        <input
+          type="text"
+          placeholder="address"
+          className="input-field mb-3"
+          value={formData.address}
+          onChange={(e) => {
+            setFormData({ ...formData, address: e.target.value });
+            setErrors({});
+          }}
+        />
+        {errors.address && (
+          <p className="text-red-500 text-sm">{errors.address}</p>
+        )}
 
         <div className="flex justify-normal mb-4">
           <label>
             <input
               type="checkbox"
               checked={formData.termsAccepted}
-              onChange={(e) =>
-                {setFormData({ ...formData, termsAccepted: e.target.checked }); setErrors({})}
-              }
+              onChange={(e) => {
+                setFormData({ ...formData, termsAccepted: e.target.checked });
+                setErrors({});
+              }}
             />{" "}
             {" Accept to the "}
-            <Link to={"/forgot-password"} className="text-blue-500 hover:underline">
+            <Link
+              to={"/forgot-password"}
+              className="text-blue-500 hover:underline"
+            >
               {" terms and conditions"}
             </Link>
           </label>
@@ -169,8 +262,12 @@ function SignUpForm() {
           <p className="text-red-500 text-sm">{errors.termsAccepted}</p>
         )}
 
-        <button type="submit" className="w-full p-2 bg-brand-primary text-white dark:text-white rounded-lg">
-          Sign Up
+        <button
+          type="submit"
+          className="w-full p-2 bg-brand-primary text-white dark:text-white rounded-lg"
+          disabled={loading}
+        >
+          {loading ? "Loading..." :"Sign Up"}
         </button>
         <p className="mt-4 text-center">
           Already have an account?{" "}

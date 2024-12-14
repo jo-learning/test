@@ -1,17 +1,26 @@
 import React, { useState, useEffect, useContext } from "react";
-import ThemeContext from "../utils/ThemeContext";
-import CounterContext from "../utils/CartCounter";
+import ThemeContext from "../../shared/utils/ThemeContext";
+import CounterContext from "../../shared/utils/CartCounter";
 import { Link } from "react-router-dom";
 import { BsFillSunFill, BsFillMoonFill, BsSearch } from "react-icons/bs";
 import { CiSliderVertical } from "react-icons/ci";
-import image1 from "../assets/zos.png";
+import image1 from "../../assets/zos.png";
 import { FaShoppingCart } from "react-icons/fa";
 import { MdDarkMode, MdLightMode } from "react-icons/md";
+import UserContext from "../../shared/utils/UserContext";
 
 function Navbar() {
   const [cartCount, setCartCount] = useState(0);
   const { theme, toggleTheme } = useContext(ThemeContext);
   const {counter} = useContext(CounterContext);
+  const {user, LoggedOutUser} = useContext(UserContext);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogout = () => {
+    console.log("Logged out");
+    LoggedOutUser();
+    // Add your logout logic here
+  };
 
   const addItemToCart = () => {
     setCartCount(cartCount + 1); // Example function to increment cart count
@@ -66,28 +75,65 @@ function Navbar() {
       >
         {theme === "light" ? <MdDarkMode size={20} /> : <MdLightMode size={20} />}
       </button>
-          {/* Login Link */}
-          <Link to="/signin" className="text-white dark:text-gray-200">
-            Login
-          </Link>
+
+            {user.length > 0 ? 
+            (
+              <div className="relative inline-block text-left">
+      {/* Avatar Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full hover:ring-2 hover:ring-blue-500"
+      >
+        <img
+          className="w-10 h-10 rounded-full"
+          src="https://via.placeholder.com/150"
+          alt="User Avatar"
+        />
+      </button>
+
+      {/* Dropdown Menu */}
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+          <div className="py-2">
+            <button
+              onClick={() => console.log("Go to Profile")}
+              className="block w-full px-4 py-2 text-sm text-gray-400 bg-white hover:bg-gray-700"
+            >
+              Profile
+            </button>
+            <Link to={'/dashboard'}>
+            <button
+              onClick={() => console.log("Go to Profile")}
+              className="block w-full px-4 py-2 text-sm text-gray-400 bg-white hover:bg-gray-700"
+            >
+              Dashboard
+            </button>
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="block w-full px-4 py-2 text-sm text-gray-400 bg-white hover:bg-gray-700"
+            >
+              Logout
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="mt-6 ">
-        <ul className="flex space-x-5 sm:pl-[160px] pl-4">
-          <li className="font-bold underline">
-            <Link>All</Link>
-          </li>
-          <li className="font-bold">
-            <Link className="text-black">Fasting</Link>
-          </li>
-          <li className="font-bold">
-            <Link className="text-black">Nan Fasting</Link>
-          </li>
-          <li className="font-bold">
-            <Link className="text-black">Drinks</Link>
-          </li>
-          {/* <li className="font-"><Link>Beauty</Link></li> */}
-        </ul>
+      )}
+
+      {/* Overlay to close dropdown when clicked outside */}
+      {isOpen && (
+        <div
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 z-0"
+        ></div>
+      )}
+    </div>
+            )
+            : (
+              <Link to="/signin" className="text-white dark:text-gray-200">
+                Login
+              </Link>)}
+          
+        </div>
       </div>
     </nav>
   );

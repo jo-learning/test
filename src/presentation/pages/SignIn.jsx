@@ -1,9 +1,9 @@
 import SignInForm from "../components/SignInForm";
-import image1 from "../assets/zos.png";
+import image1 from "../../assets/zos.png";
 
 function Signin() {
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between text-black dark:text-white">
       <div className="hidden w-full sm:flex flex-col justify-center items-center">
         <img src={image1} alt="Zos" className="w-[400px] h-[400px]" />
         <h1 className="text-3xl font-bold text-center mb-8">

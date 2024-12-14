@@ -1,9 +1,9 @@
 import SignUpForm from "../components/SignUpForm";
-import image1 from "../assets/zos.png";
+import image1 from "../../assets/zos.png";
 
 function SignUp() {
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between text-black dark:text-white">
       <div className="bg-brand-primary w-full h-full pb-8 pt-8 sm:pt-25">
         <SignUpForm />
       </div>

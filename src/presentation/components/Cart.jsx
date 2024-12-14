@@ -147,8 +147,8 @@
 // export default Cart;
 import React, { useState, useEffect, useContext } from "react";
 import { AiFillDelete, AiFillMinusCircle, AiFillPlusCircle } from "react-icons/ai";
-import ProductContext from "../utils/ProductContext";
-import CounterContext from "../utils/CartCounter";
+import ProductContext from "../../shared/utils/ProductContext";
+import CounterContext from "../../shared/utils/CartCounter";
 
 const Table = () => {
   // Load initial data from localStorage or use default
