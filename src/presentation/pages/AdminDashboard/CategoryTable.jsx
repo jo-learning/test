@@ -9,15 +9,15 @@ function CategoriesTable() {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   useEffect(() => {
-    if (user.length > 0) {
-      if (user[3].role == "admin") {
-        true;
-      } else {
-        navigate("/");
-      }
-    } else {
-      navigate("/");
-    }
+    // if (user.length > 0) {
+    //   if (user[3].role == "admin") {
+    //     true;
+    //   } else {
+    //     navigate("/");
+    //   }
+    // } else {
+    //   navigate("/");
+    // }
   }, []);
 
   return (
