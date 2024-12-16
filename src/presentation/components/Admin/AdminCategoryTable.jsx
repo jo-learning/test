@@ -50,6 +50,17 @@ export default function AdminCategoryTable() {
     },
   ];
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+
+  const handleDelete = () => {
+    alert("Item deleted!");
+    setIsModalOpen(false); // Close modal after confirmation
+  };
+
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
@@ -136,7 +147,9 @@ export default function AdminCategoryTable() {
                   <button className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
                     Edit
                   </button>
-                  <button className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
+                  <button 
+                  onClick={()=>{toggleModal()}}
+                  className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
                     Delete
                   </button>
                 </td>
@@ -174,6 +187,40 @@ export default function AdminCategoryTable() {
           &gt;
         </button>
       </div>
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={toggleModal} // Close the modal when clicking outside
+        >
+          {/* Modal Content */}
+          <div
+            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
+          >
+            <h2 className="text-lg font-semibold text-white">
+              Are you sure?
+            </h2>
+            <p className="mt-2 text-white">
+              Do you really want to delete this item? This action cannot be
+              undone.
+            </p>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={toggleModal}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="ml-2 px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

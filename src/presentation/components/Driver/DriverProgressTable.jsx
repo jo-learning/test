@@ -2,60 +2,49 @@ import { useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
 
-export default function AdminResturantTable() {
+export default function DriverProgressTable() {
   const allUsers = [
     {
       id: "USR001",
       restaurantName: "Shege",
-      fullName: "John Doe",
-      email: "john.doe@example.com",
+      foodName: "Special Burger",
+      category: "Burger",
       phone: "123-456-7890",
-      address: "123 Elm Street, Springfield",
+      price: "123",
     },
     {
       id: "USR002",
-      fullName: "Jane Smith",
+      foodName: "Special Pizza",
       restaurantName: "Shege",
-      email: "jane.smith@example.com",
+      category: "Pizza",
       phone: "987-654-3210",
-      address: "456 Oak Avenue, Metropolis",
+      price: "456",
     },
     {
       id: "USR003",
-      fullName: "Alice Johnson",
+      foodName: "Special Pizza",
       restaurantName: "Shege",
-      email: "alice.johnson@example.com",
+      category: "Pizza",
       phone: "555-123-4567",
-      address: "789 Pine Road, Gotham",
+      price: "789",
     },
     {
       id: "USR004",
-      fullName: "Bob Brown",
+      foodName: "Bob Brown",
       restaurantName: "Shege",
-      email: "bob.brown@example.com",
+      category: "Burger",
       phone: "555-987-6543",
-      address: "321 Cedar Lane, Star City",
+      price: "321",
     },
     {
       id: "USR005",
-      fullName: "Cathy White",
+      foodName: "Cathy White",
       restaurantName: "Shege",
-      email: "cathy.white@example.com",
+      category: "Burger",
       phone: "444-555-6666",
-      address: "654 Maple Boulevard, Central City",
+      price: "300",
     },
   ];
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
-
-  const handleDelete = () => {
-    alert("Item deleted!");
-    setIsModalOpen(false); // Close modal after confirmation
-  };
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -63,8 +52,8 @@ export default function AdminResturantTable() {
 
   const filteredUsers = allUsers.filter(
     (user) =>
-      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.foodName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.restaurantName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -81,7 +70,7 @@ export default function AdminResturantTable() {
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">
-        Users
+        Ready table
       </h1>
 
       {/* Search Bar and Add Restaurant Button */}
@@ -95,12 +84,6 @@ export default function AdminResturantTable() {
         />
         
       </div>
-      <div className="flex justify-end mb-2">
-        <NavLink to={'/resturantform'}>
-      <button className="px-4 py-2  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
-        <CiCirclePlus size={28}/>
-          Add Restaurant
-        </button></NavLink></div>
 
       {/* Users Table */}
       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -111,19 +94,25 @@ export default function AdminResturantTable() {
                 ID
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Restaurant Name
+                Restaurant Phone
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Owner Name
+              Restaurant Name
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email
+                Restaurant Address
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Phone
+                Time
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Address
+              Customer Name
+              </th>
+              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Customer Phone
+              </th>
+              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+              Customer Address
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Action
@@ -144,29 +133,31 @@ export default function AdminResturantTable() {
                   {user.id}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.restaurantName}
+                  {user.foodName}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.fullName}
+                {user.restaurantName}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.email}
+                  {user.category}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                  {user.price}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
                   {user.phone}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.address}
+                  {user.phone}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                  {user.phone}
                 </td>
                 <td className="flex px-4 py-3">
                   <button className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
-                    Edit
+                    Done
                   </button>
-                  <button 
-                  onClick={toggleModal}
-                  className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
-                    Delete
-                  </button>
+                  
                 </td>
               </tr>
             ))}
@@ -202,61 +193,6 @@ export default function AdminResturantTable() {
           &gt;
         </button>
       </div>
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-          onClick={toggleModal} // Close the modal when clicking outside
-        >
-          {/* Modal Content */}
-          <div
-            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
-            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
-          >
-            <h2 className="text-lg font-semibold text-white">
-              Are you sure?
-            </h2>
-            <p className="mt-2 text-white">
-              Do you really want to delete this item? This action cannot be
-              undone.
-            </p>
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={toggleModal}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="ml-2 px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

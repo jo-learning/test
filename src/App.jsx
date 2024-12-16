@@ -23,6 +23,16 @@ import CategoriesTable from './presentation/pages/AdminDashboard/CategoryTable';
 import VehiclesTable from './presentation/pages/AdminDashboard/VehicleTable';
 import VehiclesForm from './presentation/pages/AdminDashboard/VehicleForm';
 import DriversForm from './presentation/pages/AdminDashboard/DriverForm';
+import FoodsTable from './presentation/pages/RestaurantDashboard/FoodTable';
+import DrinksTable from './presentation/pages/RestaurantDashboard/DrinkTable';
+import DrinksForm from './presentation/pages/RestaurantDashboard/DrinkForm';
+import FoodsForm from './presentation/pages/RestaurantDashboard/FoodForm';
+import ReadyTablePage from './presentation/pages/DriverDashboard/ReadyTable';
+import ProgressTablePage from './presentation/pages/DriverDashboard/ProgressTable';
+import DeliveredTablePage from './presentation/pages/DriverDashboard/DeliveredTable';
+import DetailPage from './presentation/pages/Detail';
+import RestaurantOrderSummaryTable from './presentation/pages/RestaurantDashboard/OrderSummary';
+import RestaurantDashboardPage from './presentation/pages/RestaurantDashboard/Dashboard';
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -64,6 +74,17 @@ function App() {
         <Route path="/vehicletable" element={<VehiclesTable />} />
         <Route path="/vehicleform" element={<VehiclesForm />} />
         <Route path="/driverform" element={<DriversForm />} />
+        <Route path="/foodtable" element={<FoodsTable />} />
+        <Route path="/drinktable" element={<DrinksTable />} />
+        <Route path="/drinkform" element={<DrinksForm />} />
+        <Route path="/foodform" element={<FoodsForm />} />
+        <Route path="/readytable" element={<ReadyTablePage />} />
+        <Route path="/progresstable" element={<ProgressTablePage />} />
+        <Route path="/deliveredtable" element={<DeliveredTablePage />} />
+        <Route path="/detail" element={<DetailPage />} />
+        <Route path="/restaurantordersummary" element={<RestaurantOrderSummaryTable />} />
+        <Route path="/restaurantdashboard" element={<RestaurantDashboardPage />} />
+
 
 
       </Routes>

@@ -2,49 +2,81 @@ import { useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
 
-export default function AdminResturantTable() {
+export default function ResturantDrinkTable() {
   const allUsers = [
     {
       id: "USR001",
       restaurantName: "Shege",
-      fullName: "John Doe",
-      email: "john.doe@example.com",
+      foodName: "Special Burger",
+      category: "Burger",
       phone: "123-456-7890",
-      address: "123 Elm Street, Springfield",
+      price: "123",
     },
     {
       id: "USR002",
-      fullName: "Jane Smith",
+      foodName: "Special Pizza",
       restaurantName: "Shege",
-      email: "jane.smith@example.com",
+      category: "Pizza",
       phone: "987-654-3210",
-      address: "456 Oak Avenue, Metropolis",
+      price: "456",
     },
     {
       id: "USR003",
-      fullName: "Alice Johnson",
+      foodName: "Special Pizza",
       restaurantName: "Shege",
-      email: "alice.johnson@example.com",
+      category: "Pizza",
       phone: "555-123-4567",
-      address: "789 Pine Road, Gotham",
+      price: "789",
     },
     {
       id: "USR004",
-      fullName: "Bob Brown",
+      foodName: "Bob Brown",
       restaurantName: "Shege",
-      email: "bob.brown@example.com",
+      category: "Burger",
       phone: "555-987-6543",
-      address: "321 Cedar Lane, Star City",
+      price: "321",
     },
     {
       id: "USR005",
-      fullName: "Cathy White",
+      foodName: "Cathy White",
       restaurantName: "Shege",
-      email: "cathy.white@example.com",
+      category: "Burger",
       phone: "444-555-6666",
-      address: "654 Maple Boulevard, Central City",
+      price: "300",
     },
   ];
+
+  const [users, setUsers] = useState(allUsers);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+
+  const handleEditClick = (user) => {
+    setEditingUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditingUser((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSave = () => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === editingUser.id ? editingUser : user
+      )
+    );
+    setIsEditModalOpen(false);
+  };
+
+  const handleEditCancel = () => {
+    setEditingUser(null);
+    setIsEditModalOpen(false);
+  };
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -57,14 +89,10 @@ export default function AdminResturantTable() {
     setIsModalOpen(false); // Close modal after confirmation
   };
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
-
   const filteredUsers = allUsers.filter(
     (user) =>
-      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.foodName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.restaurantName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -81,7 +109,7 @@ export default function AdminResturantTable() {
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">
-        Users
+        Drink List
       </h1>
 
       {/* Search Bar and Add Restaurant Button */}
@@ -93,14 +121,15 @@ export default function AdminResturantTable() {
           onChange={handleSearchChange}
           className="w-full px-4 py-2 text-gray-800 bg-white border rounded-md dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 mr-4"
         />
-        
       </div>
       <div className="flex justify-end mb-2">
-        <NavLink to={'/resturantform'}>
-      <button className="px-4 py-2  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
-        <CiCirclePlus size={28}/>
-          Add Restaurant
-        </button></NavLink></div>
+        <NavLink to={"/drinkform"}>
+          <button className="px-4 py-2  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
+            <CiCirclePlus size={28} />
+            Add Drink
+          </button>
+        </NavLink>
+      </div>
 
       {/* Users Table */}
       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -111,19 +140,19 @@ export default function AdminResturantTable() {
                 ID
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Food Name
+              </th>
+              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Restaurant Name
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Owner Name
+                Category
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email
+                Price
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Phone
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Address
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Action
@@ -144,27 +173,30 @@ export default function AdminResturantTable() {
                   {user.id}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                  {user.foodName}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
                   {user.restaurantName}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.fullName}
+                  {user.category}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.email}
+                  {user.price}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
                   {user.phone}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.address}
-                </td>
                 <td className="flex px-4 py-3">
-                  <button className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
+                  <button 
+                  onClick={() => handleEditClick(user)}
+                  className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
                     Edit
                   </button>
-                  <button 
-                  onClick={toggleModal}
-                  className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
+                  <button
+                    onClick={toggleModal}
+                    className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
+                  >
                     Delete
                   </button>
                 </td>
@@ -236,27 +268,73 @@ export default function AdminResturantTable() {
           </div>
         </div>
       )}
+      {/* Edit Modal */}
+      {isEditModalOpen && editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div
+            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-white">Edit Food</h2>
+            <div className="mt-4">
+              <input
+                type="text"
+                name="foodName"
+                value={editingUser.foodName}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Food Name"
+              />
+              <input
+                type="text"
+                name="restaurantName"
+                value={editingUser.restaurantName}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Restaurant Name"
+              />
+              <input
+                type="text"
+                name="category"
+                value={editingUser.category}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Category"
+              />
+              <input
+                type="text"
+                name="price"
+                value={editingUser.price}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Price"
+              />
+              <input
+                type="text"
+                name="phone"
+                value={editingUser.phone}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Phone"
+              />
+            </div>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={handleEditCancel}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditSave}
+                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
