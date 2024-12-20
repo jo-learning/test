@@ -33,6 +33,7 @@ import DeliveredTablePage from './presentation/pages/DriverDashboard/DeliveredTa
 import DetailPage from './presentation/pages/Detail';
 import RestaurantOrderSummaryTable from './presentation/pages/RestaurantDashboard/OrderSummary';
 import RestaurantDashboardPage from './presentation/pages/RestaurantDashboard/Dashboard';
+import RestaurantPage from './presentation/pages/Restaurant';
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -84,6 +85,8 @@ function App() {
         <Route path="/detail" element={<DetailPage />} />
         <Route path="/restaurantordersummary" element={<RestaurantOrderSummaryTable />} />
         <Route path="/restaurantdashboard" element={<RestaurantDashboardPage />} />
+        <Route path="/restaurant" element={<RestaurantPage />} />
+
 
 
 

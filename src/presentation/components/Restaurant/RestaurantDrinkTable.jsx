@@ -96,7 +96,7 @@ export default function ResturantDrinkTable() {
   );
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const displayedUsers = filteredUsers.slice(
+  const displayedUsers = users.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );

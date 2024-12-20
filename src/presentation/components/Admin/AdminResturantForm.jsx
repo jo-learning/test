@@ -32,6 +32,24 @@ const ResturantForm = () => {
     address: 0,
   });
 
+  const [previewUrl, setPreviewUrl] = useState(null); // Store the preview URL
+
+  // Handle file input change
+  const handleFileChange = (event) => {
+    const file = event.target.files[0]; // Get the selected file
+    if (file) {
+      // setImage(file);
+
+      // Generate a preview URL
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewUrl(reader.result); // Set the preview URL
+        console.log("ready");
+      };
+      reader.readAsDataURL(file); // Read the file as a data URL
+    }
+  };
+
   const handleChange = (e, field, index = null) => {
     const { name, value } = e.target;
     if (index !== null) {
@@ -46,7 +64,7 @@ const ResturantForm = () => {
   const handleAddInput = (field, index = null) => {
     const newData = { ...formData };
     if (index !== null) {
-      setLast({ ...last, [field]: index+1 });
+      setLast({ ...last, [field]: index + 1 });
     }
     newData[field].push({ key: "", value: "" });
     setFormData(newData);
@@ -54,7 +72,7 @@ const ResturantForm = () => {
 
   const handleDeleteInput = (field, index) => {
     if (index !== null) {
-      setLast({ ...last, [field]: last[field]-1 });
+      setLast({ ...last, [field]: last[field] - 1 });
     }
     const updatedArray = [...formData[field]];
     updatedArray.splice(index, 1); // Remove at specific index
@@ -105,7 +123,18 @@ const ResturantForm = () => {
           </div>
           <div>
             <label className="block text-sm font-medium">Image</label>
-            <div className="h-[200px] w-[200px] bg-gray-400 rounded-lg"></div>
+            <div className="h-[200px] w-[200px] bg-gray-400 rounded-lg">
+              {previewUrl && (
+                <div>
+                  {/* <h2>Image Preview:</h2> */}
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    style={{ maxWidth: "100%", maxHeight: "300px" }}
+                  />
+                </div>
+              )}
+            </div>
             <p>
               Upload a JPG or PNG image with dimension 291x194 pixel.<br></br>{" "}
               Maximum file size: 1 MB
@@ -113,7 +142,10 @@ const ResturantForm = () => {
             <input
               type="file"
               name="image"
-              onChange={(e) => handleChange(e, "image")}
+              onChange={(e) => {
+                handleChange(e, "image");
+                handleFileChange(e);
+              }}
               className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
             />
           </div>

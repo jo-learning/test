@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { MdOutlineRestaurant, MdOutlineFamilyRestroom } from "react-icons/md";
@@ -11,6 +11,20 @@ import { FiMenu, FiChevronLeft } from "react-icons/fi"; // Toggle icons
 
 const DashboardLayout = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar toggle state
+
+  useEffect(()=>{
+    const collapse = localStorage.getItem("collapse")
+    if (collapse == "true"){
+     setIsCollapsed(true);
+    }else if (collapse == "false"){
+      setIsCollapsed(false);
+    }
+  },[])
+
+  const handleOnCollapsed = () => {
+    setIsCollapsed(!isCollapsed)
+    localStorage.setItem("collapse", !isCollapsed)
+  } 
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -27,7 +41,7 @@ const DashboardLayout = ({ children }) => {
           )}
           <button
             className="text-white p-2 hover:bg-gray-700 rounded"
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={() => handleOnCollapsed()}
           >
             {isCollapsed ? <FiMenu /> : <FiChevronLeft />}
           </button>

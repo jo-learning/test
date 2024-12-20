@@ -40,6 +40,37 @@ export default function AdminVehicelTable() {
       address: "654 Maple Boulevard, Central City",
     },
   ];
+
+
+  const [users, setUsers] = useState(allUsers);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+
+  const handleEditClick = (user) => {
+    setEditingUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditingUser((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSave = () => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === editingUser.id ? editingUser : user
+      )
+    );
+    setIsEditModalOpen(false);
+  };
+
+  const handleEditCancel = () => {
+    setEditingUser(null);
+    setIsEditModalOpen(false);
+  };
+
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const toggleModal = () => {
@@ -105,10 +136,16 @@ export default function AdminVehicelTable() {
                 ID
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Full Name
+                Driver Name
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email
+                Vehicle Model
+              </th>
+              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                License
+              </th>
+              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                Plate Number
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Phone
@@ -141,13 +178,21 @@ export default function AdminVehicelTable() {
                   {user.email}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                  {user.email}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                  {user.email}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
                   {user.phone}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
                   {user.address}
                 </td>
                 <td className="px-4 py-3">
-                  <button className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
+                  <button 
+                  onClick={()=>{handleEditClick(user)}}
+                  className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
                     Edit
                   </button>
                   <button 
@@ -219,6 +264,75 @@ export default function AdminVehicelTable() {
                 className="ml-2 px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* Edit Modal */}
+      {isEditModalOpen && editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div
+            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-white">Edit Food</h2>
+            <div className="mt-4">
+              <input
+                type="text"
+                name="foodName"
+                value={editingUser.foodName}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Food Name"
+              />
+              <input
+                type="text"
+                name="restaurantName"
+                value={editingUser.restaurantName}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Restaurant Name"
+              />
+              <input
+                type="text"
+                name="category"
+                value={editingUser.category}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Category"
+              />
+              <input
+                type="text"
+                name="price"
+                value={editingUser.price}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Price"
+              />
+              <input
+                type="text"
+                name="phone"
+                value={editingUser.phone}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Phone"
+              />
+            </div>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={handleEditCancel}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditSave}
+                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+              >
+                Save
               </button>
             </div>
           </div>

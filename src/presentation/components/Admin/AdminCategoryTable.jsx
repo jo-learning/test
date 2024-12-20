@@ -50,14 +50,50 @@ export default function AdminCategoryTable() {
     },
   ];
 
+  const [users, setUsers] = useState(allUsers);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+
+  const handleEditClick = (user) => {
+    setEditingUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditingUser((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSave = () => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === editingUser.id ? editingUser : user
+      )
+    );
+    setIsEditModalOpen(false);
+  };
+
+  const handleEditCancel = () => {
+    setEditingUser(null);
+    setIsEditModalOpen(false);
+  };
+
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [addCategory, setAddCategory] = useState(false);
+  const [category, setCategory] = useState(null)
+
+  const handleOnChange = (e) =>{
+      setCategory(e.target.value)
+      console.log(category);
+  }
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
   };
 
   const handleDelete = () => {
-    alert("Item deleted!");
+    alert("Item added!");
     setIsModalOpen(false); // Close modal after confirmation
   };
 
@@ -100,7 +136,9 @@ export default function AdminCategoryTable() {
         
       </div>
       <div className="flex justify-end mb-2">
-      <button className="px-4 py-2  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
+      <button 
+      onClick={()=>{setAddCategory(true)}}
+      className="px-4 py-2  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
         <CiCirclePlus size={28}/>
           Add Category
         </button></div>
@@ -144,7 +182,9 @@ export default function AdminCategoryTable() {
                   {user.items}
                 </td>
                 <td className="px-4 py-3">
-                  <button className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
+                  <button 
+                  onClick={()=>{handleEditClick(user)}}
+                  className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
                     Edit
                   </button>
                   <button 
@@ -216,6 +256,109 @@ export default function AdminCategoryTable() {
                 className="ml-2 px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+{addCategory && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={toggleModal} // Close the modal when clicking outside
+        >
+          {/* Modal Content */}
+          <div
+            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
+          >
+            <label>Category Name</label>
+            <input
+            type="text"
+            className="w-full text-black px-4 py-2 mt-2 border rounded-lg bg-white"
+            onChange={handleOnChange}
+            >
+            </input>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={()=> {setAddCategory(false)}}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="ml-2 px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
+              >
+                Add Category
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {isEditModalOpen && editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div
+            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-white">Edit Food</h2>
+            <div className="mt-4">
+              <input
+                type="text"
+                name="foodName"
+                value={editingUser.foodName}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Food Name"
+              />
+              <input
+                type="text"
+                name="restaurantName"
+                value={editingUser.restaurantName}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Restaurant Name"
+              />
+              <input
+                type="text"
+                name="category"
+                value={editingUser.category}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Category"
+              />
+              <input
+                type="text"
+                name="price"
+                value={editingUser.price}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Price"
+              />
+              <input
+                type="text"
+                name="phone"
+                value={editingUser.phone}
+                onChange={handleEditChange}
+                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
+                placeholder="Phone"
+              />
+            </div>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={handleEditCancel}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditSave}
+                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+              >
+                Save
               </button>
             </div>
           </div>

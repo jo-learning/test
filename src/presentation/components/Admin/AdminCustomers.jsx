@@ -73,7 +73,7 @@ export default function UsersTable() {
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">
-        Users
+        Customers
       </h1>
 
       {/* Search Bar */}
