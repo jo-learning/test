@@ -18,7 +18,7 @@ const ResturantForm = () => {
     socialMedia: [{ key: "", value: "" }],
     cuisineType: [{ key: "", value: "" }],
     address: [{ key: "", value: "" }],
-    geolocation: "",
+    geolocation: [{ lat: "", long: "" }],
   });
 
   const [last, setLast] = useState({
@@ -309,7 +309,7 @@ const ResturantForm = () => {
 
           <div>
             <label className="block text-sm font-medium">Ambiance</label>
-            {formData.ambiance.map((item, index) => (
+            {/* {formData.ambiance.map((item, index) => (
               <div key={index} className="flex space-x-2">
                 <input
                   type="text"
@@ -349,7 +349,8 @@ const ResturantForm = () => {
                   </div>
                 )}
               </div>
-            ))}
+            ))} */}
+            <input type="file"></input>
           </div>
           <div>
             <label className="block text-sm font-medium">Websites</label>
@@ -489,13 +490,47 @@ const ResturantForm = () => {
 
           <div>
             <label className="block text-sm font-medium">Geolocation</label>
-            <input
-              type="text"
-              name="geolocation"
-              value={formData.geolocation}
-              onChange={(e) => handleChange(e, "geolocation")}
-              className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
-            />
+            {formData.geolocation.map((item, index) => (
+              <div key={index} className="flex space-x-2">
+                <input
+                  type="text"
+                  name="lat"
+                  placeholder="lat"
+                  value={item.key}
+                  onChange={(e) => handleChange(e, "geolocation", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                <input
+                  type="cuisineType"
+                  name="long"
+                  placeholder="long"
+                  value={item.value}
+                  onChange={(e) => handleChange(e, "geolocation", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                {last["cuisineType"] == index ? (
+                  <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAddInput("cuisineType", index)}
+                      className=" bg-green-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaPlusCircle size={28} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInput("cuisineType", index)}
+                      className=" bg-red-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaMinusCircle size={28} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
 
           <button

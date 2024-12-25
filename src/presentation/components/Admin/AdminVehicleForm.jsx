@@ -55,21 +55,26 @@ const VehicleForm = () => {
 
   return (
     <>
-    <div className='mb-2'><NavLink to={'/vehicletable'} className={'bg-gray-500 mb-5 ml-2 py-1 px-2 text-white rounded-lg'}>&lt; Back</NavLink></div>
+    <div className='mb-2'><NavLink to={'/vehicletable'} className={'bg-gray-500 mb-5 ml-2 py-1 px-2 text-white rounded-lg '}>&lt; Back</NavLink></div>
     <form onSubmit={handleSubmit} className="flex justify-between text-black dark:text-gray-400 space-y-4 space-x-4  max-w-full mx-auto p-6 border rounded-lg shadow-lg">
         
         <div>
-      <div>
-        <label className="block text-sm font-medium">Vehicle Type</label>
-        <input
-          type="text"
-          name="type"
-          value={formData.type}
-          onChange={(e) => handleChange(e, 'type')}
-          className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
-          
-        />
-      </div>
+        <div>
+            <label className="block text-sm font-medium">Vehicle Type</label>
+            <select
+              name="type"
+              value={formData.type}
+              onChange={(e) => handleChange(e, "type")}
+              className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+            >
+              <option value="" disabled>
+                Select Type
+              </option>
+              <option value="model1">Model 1</option>
+              <option value="model2">Model 2</option>
+            </select>
+          </div>
+      
       <div>
         <label className="block text-sm font-medium">Vehicle Model</label>
         <input
@@ -130,7 +135,7 @@ const VehicleForm = () => {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium">Insurance</label>
+        <label className="block text-sm font-medium">Working Hour</label>
         <input
           type="text"
           name="insurance"
@@ -140,7 +145,7 @@ const VehicleForm = () => {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium">Working Hours</label>
+        <label className="block text-sm font-medium">Insurance</label>
         {formData.workingHours.map((item, index) => (
           <div key={index} className="flex space-x-2">
             <input

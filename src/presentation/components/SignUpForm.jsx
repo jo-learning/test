@@ -131,24 +131,6 @@ function SignUpForm() {
 
   return (
     <div className="max-w-sm mb-10 sm:mb-0 mx-auto p-8 bg-gray-200 dark:bg-gray-800 shadow-md rounded-lg">
-      <div className="flex justify-center mb-4">
-        <button
-          className={`px-4 py-2 ${
-            mode === "user" ? "bg-blue-500 text-white" : "bg-gray-300"
-          } rounded-l`}
-          onClick={() => toggleMode("user")}
-        >
-          User
-        </button>
-        <button
-          className={`px-4 py-2 ${
-            mode === "provider" ? "bg-blue-500 text-white" : "bg-gray-300"
-          } rounded-r`}
-          onClick={() => toggleMode("provider")}
-        >
-          Provider
-        </button>
-      </div>
       <h2 className="text-2xl font-bold mb-4 flex justify-center">Sign Up</h2>
       <form onSubmit={handleSubmit}>
         <input

@@ -66,7 +66,7 @@ const DrinkForm = () => {
       </div>
       <form
         onSubmit={handleSubmit}
-        className="flex justify-start text-black dark:text-gray-400 space-y-4 space-x-4  max-w-full mx-auto p-6 border rounded-lg shadow-lg"
+        className="flex justify-start text-black dark:text-gray-400 space-y-4 space-x-4  max-w-full mx-auto p-6 border dark:border-none rounded-lg shadow-lg"
       >
         <div className="w-full">
           <div>

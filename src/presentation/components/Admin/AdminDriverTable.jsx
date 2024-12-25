@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
+
+import { CSVLink } from "react-csv";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import DownloadCSVorPDF from "../lib/download";
+import RecordsPerPage from "../lib/recordsPerPage";
 
 export default function AdminDriverTable() {
   const allUsers = [
@@ -67,9 +73,7 @@ export default function AdminDriverTable() {
 
   const handleEditSave = () => {
     setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === editingUser.id ? editingUser : user
-      )
+      prevUsers.map((user) => (user.id === editingUser.id ? editingUser : user))
     );
     setIsEditModalOpen(false);
   };
@@ -78,7 +82,6 @@ export default function AdminDriverTable() {
     setEditingUser(null);
     setIsEditModalOpen(false);
   };
-
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -93,7 +96,8 @@ export default function AdminDriverTable() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
+  const [itemsPerPage, setItemsPerPage] = useState(3);
+  // const itemsPerPage = 3;
 
   const filteredUsers = allUsers.filter(
     (user) =>
@@ -106,17 +110,101 @@ export default function AdminDriverTable() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [sortedUsers, setSortedUsers] = useState(
+    filteredUsers.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    )
+  );
+
+  const handleSort = (column) => {
+    const direction =
+      sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
+    setSortColumn(column);
+    setSortDirection(direction);
+
+    // Sort the users array
+    const sortedData = [...displayedUsers].sort((a, b) => {
+      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
+      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setSortedUsers(sortedData);
+  };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1); // Reset to the first page on a new search
   };
 
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Users Table", 20, 10); // Add title
+
+    const tableColumn = [
+      "ID",
+      "Restaurant Name",
+      "Owner Name",
+      "Email",
+      "Phone",
+      "Address",
+    ];
+    const tableRows = sortedUsers.map((user) => [
+      user.id,
+      user.restaurantName,
+      user.fullName,
+      user.email,
+      user.phone,
+      user.address,
+    ]);
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    });
+
+    doc.save("users_table.pdf");
+  };
+
+  const csvHeaders = [
+    { label: "ID", key: "id" },
+    { label: "Full Name", key: "fullName" },
+    { label: "Sex", key: "sex" },
+    { label: "User Name", key: "username" },
+    { label: "Phone", key: "phone" },
+  ];
+
+  useEffect(()=>{
+    const column = "id"
+    // setSortedUsers(filteredUsers.slice(
+    //   (currentPage - 1) * itemsPerPage,
+    //   currentPage * itemsPerPage
+    // ))
+    const direction =
+      sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
+    setSortColumn(column);
+    setSortDirection(direction);
+    const sortedData = [...displayedUsers].sort((a, b) => {
+      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
+      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setSortedUsers(sortedData);
+
+  },[currentPage, searchTerm, itemsPerPage])
+
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">
         Drivers
       </h1>
+
+      <DownloadCSVorPDF sortedUsers={sortedUsers} csvHeaders={csvHeaders} tableName={"Restaurant Table"} />
 
       {/* Search Bar and Add Restaurant Button */}
       <div className="mb-4 flex justify-between items-center">
@@ -127,42 +215,45 @@ export default function AdminDriverTable() {
           onChange={handleSearchChange}
           className="w-full px-4 py-2 text-gray-800 bg-white border rounded-md dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 mr-4"
         />
-        
+        <div className="flex justify-end mb-2">
+        <NavLink to={"/driverform"}>
+          <button className="px-4 py-2 whitespace-nowrap flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
+            <CiCirclePlus size={28} />
+            Add Driver
+          </button>
+        </NavLink>
       </div>
-      <div className="flex justify-end mb-2">
-        <NavLink to={'/driverform'}>
-      <button className="px-4 py-2  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
-        <CiCirclePlus size={28}/>
-          Add Driver
-        </button></NavLink></div>
+      </div>
+      
 
       {/* Users Table */}
       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
         <table className="min-w-full text-left">
           <thead className="bg-gray-200 dark:bg-gray-700">
             <tr>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                ID
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Full Name
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Sex
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                User Name
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Phone
-              </th>
+              {csvHeaders.map((column) => (
+                <th
+                  key={column.key}
+                  className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+                  onClick={() => handleSort(column.key)}
+                >
+                  <div className="flex items-center">
+                    {column.label}
+                    {sortColumn === column.key && (
+                      <span className="ml-2">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
+                </th>
+              ))}
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Action
               </th>
             </tr>
           </thead>
           <tbody>
-            {displayedUsers.map((user, index) => (
+            {sortedUsers.map((user, index) => (
               <tr
                 key={index}
                 className={`${
@@ -187,14 +278,18 @@ export default function AdminDriverTable() {
                   {user.phone}
                 </td>
                 <td className="px-4 py-3">
-                  <button 
-                  onClick={()=>{handleEditClick(user)}}
-                  className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
+                  <button
+                    onClick={() => {
+                      handleEditClick(user);
+                    }}
+                    className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                  >
                     Edit
                   </button>
-                  <button 
-                  onClick={toggleModal}
-                  className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
+                  <button
+                    onClick={toggleModal}
+                    className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
+                  >
                     Delete
                   </button>
                 </td>
@@ -205,32 +300,37 @@ export default function AdminDriverTable() {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-center mt-4">
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage(currentPage - 1)}
-          className={`px-3 py-1 text-sm ${
-            currentPage === 1
-              ? "text-gray-400 bg-gray-200 cursor-not-allowed"
-              : "text-white bg-blue-600 hover:bg-blue-700"
-          } rounded`}
-        >
-          &lt;
-        </button>
-        <span className="text-gray-800 dark:text-gray-300">
-          {currentPage} / {totalPages}
-        </span>
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage(currentPage + 1)}
-          className={`px-3 py-1 text-sm ${
-            currentPage === totalPages
-              ? "text-gray-400 bg-gray-200 cursor-not-allowed"
-              : "text-white bg-blue-600 hover:bg-blue-700"
-          } rounded`}
-        >
-          &gt;
-        </button>
+      <div className="flex items-center justify-between mt-4">
+        {/* Pagination Controls */}
+        <div className="flex items-center justify-center flex-grow-0 w-full">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+            className={`px-3 py-1 text-sm ${
+              currentPage === 1
+                ? "text-gray-400 bg-gray-200 cursor-not-allowed"
+                : "text-white bg-blue-600 hover:bg-blue-700"
+            } rounded`}
+          >
+            &lt;
+          </button>
+          <span className="mx-2 text-gray-800 dark:text-gray-300">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+            className={`px-3 py-1 text-sm ${
+              currentPage === totalPages
+                ? "text-gray-400 bg-gray-200 cursor-not-allowed"
+                : "text-white bg-blue-600 hover:bg-blue-700"
+            } rounded`}
+          >
+            &gt;
+          </button>
+        </div>
+        
+        <RecordsPerPage setItemsPerPage={setItemsPerPage} />
       </div>
       {isModalOpen && (
         <div
@@ -242,9 +342,7 @@ export default function AdminDriverTable() {
             className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
           >
-            <h2 className="text-lg font-semibold text-white">
-              Are you sure?
-            </h2>
+            <h2 className="text-lg font-semibold text-white">Are you sure?</h2>
             <p className="mt-2 text-white">
               Do you really want to delete this item? This action cannot be
               undone.
@@ -266,7 +364,6 @@ export default function AdminDriverTable() {
           </div>
         </div>
       )}
-
 
       {/* Edit Modal */}
       {isEditModalOpen && editingUser && (

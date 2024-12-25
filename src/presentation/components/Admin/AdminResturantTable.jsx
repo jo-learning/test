@@ -1,6 +1,14 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
+
+// import recordsPerPage from "../lib/recordsPerPage";
+
+import { CSVLink } from "react-csv";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import RecordsPerPage from "../lib/recordsPerPage";
+import DownloadCSVorPDF from "../lib/download";
 
 export default function AdminResturantTable() {
   const allUsers = [
@@ -49,6 +57,7 @@ export default function AdminResturantTable() {
   const [users, setUsers] = useState(allUsers);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  
 
   const handleEditClick = (user) => {
     setEditingUser(user);
@@ -62,9 +71,7 @@ export default function AdminResturantTable() {
 
   const handleEditSave = () => {
     setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === editingUser.id ? editingUser : user
-      )
+      prevUsers.map((user) => (user.id === editingUser.id ? editingUser : user))
     );
     setIsEditModalOpen(false);
   };
@@ -73,7 +80,6 @@ export default function AdminResturantTable() {
     setEditingUser(null);
     setIsEditModalOpen(false);
   };
-
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -88,7 +94,8 @@ export default function AdminResturantTable() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
+  const [itemsPerPage, setItemsPerPage] = useState(3)
+  // const itemsPerPage = 3;
 
   const filteredUsers = allUsers.filter(
     (user) =>
@@ -101,17 +108,74 @@ export default function AdminResturantTable() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+  const [sortColumn, setSortColumn] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [sortedUsers, setSortedUsers] = useState(
+    filteredUsers.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    )
+  );
+
+  const handleSort = (column) => {
+    const direction =
+      sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
+    setSortColumn(column);
+    setSortDirection(direction);
+
+    // Sort the users array
+    const sortedData = [...displayedUsers].sort((a, b) => {
+      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
+      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setSortedUsers(sortedData);
+  };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1); // Reset to the first page on a new search
   };
 
+
+  const csvHeaders = [
+    { label: "ID", key: "id" },
+    { label: "Restaurant Name", key: "restaurantName" },
+    { label: "Owner Name", key: "fullName" },
+    { label: "Email", key: "email" },
+    { label: "Phone", key: "phone" },
+    { label: "Address", key: "address" },
+  ];
+
+
+  useEffect(()=>{
+    const column = "id"
+    // setSortedUsers(filteredUsers.slice(
+    //   (currentPage - 1) * itemsPerPage,
+    //   currentPage * itemsPerPage
+    // ))
+    const direction =
+      sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
+    setSortColumn(column);
+    setSortDirection(direction);
+    const sortedData = [...displayedUsers].sort((a, b) => {
+      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
+      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    setSortedUsers(sortedData);
+
+  },[currentPage, searchTerm, itemsPerPage])
+
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">
         Restaurant
       </h1>
+     
+      <DownloadCSVorPDF sortedUsers={sortedUsers} csvHeaders={csvHeaders} tableName={"Restaurant Table"} />
 
       {/* Search Bar and Add Restaurant Button */}
       <div className="mb-4 flex justify-between items-center">
@@ -122,45 +186,45 @@ export default function AdminResturantTable() {
           onChange={handleSearchChange}
           className="w-full px-4 py-2 text-gray-800 bg-white border rounded-md dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 mr-4"
         />
-        
+
+        <div className="flex justify-end mb-2">
+          <NavLink to={"/resturantform"}>
+            <button className="px-4 py-2 whitespace-nowrap  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
+              <CiCirclePlus size={28} />
+              Add Restaurant
+            </button>
+          </NavLink>
+        </div>
       </div>
-      <div className="flex justify-end mb-2">
-        <NavLink to={'/resturantform'}>
-      <button className="px-4 py-2  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
-        <CiCirclePlus size={28}/>
-          Add Restaurant
-        </button></NavLink></div>
 
       {/* Users Table */}
       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
         <table className="min-w-full text-left">
           <thead className="bg-gray-200 dark:bg-gray-700">
             <tr>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                ID
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Restaurant Name
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Owner Name
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Email
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Phone
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Address
-              </th>
+              {csvHeaders.map((column) => (
+                <th
+                  key={column.key}
+                  className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+                  onClick={() => handleSort(column.key)}
+                >
+                  <div className="flex items-center">
+                    {column.label}
+                    {sortColumn === column.key && (
+                      <span className="ml-2">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
+                </th>
+              ))}
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Action
               </th>
             </tr>
           </thead>
           <tbody>
-            {displayedUsers.map((user, index) => (
+            {sortedUsers.map((user, index) => (
               <tr
                 key={index}
                 className={`${
@@ -188,14 +252,18 @@ export default function AdminResturantTable() {
                   {user.address}
                 </td>
                 <td className="flex px-4 py-3">
-                  <button 
-                  onClick={()=>{handleEditClick(user)}}
-                  className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
+                  <button
+                    onClick={() => {
+                      handleEditClick(user);
+                    }}
+                    className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                  >
                     Edit
                   </button>
-                  <button 
-                  onClick={toggleModal}
-                  className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">
+                  <button
+                    onClick={toggleModal}
+                    className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
+                  >
                     Delete
                   </button>
                 </td>
@@ -206,33 +274,52 @@ export default function AdminResturantTable() {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-center mt-4">
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage(currentPage - 1)}
-          className={`px-3 py-1 text-sm ${
-            currentPage === 1
-              ? "text-gray-400 bg-gray-200 cursor-not-allowed"
-              : "text-white bg-blue-600 hover:bg-blue-700"
-          } rounded`}
-        >
-          &lt;
-        </button>
-        <span className="text-gray-800 dark:text-gray-300">
-          {currentPage} / {totalPages}
-        </span>
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage(currentPage + 1)}
-          className={`px-3 py-1 text-sm ${
-            currentPage === totalPages
-              ? "text-gray-400 bg-gray-200 cursor-not-allowed"
-              : "text-white bg-blue-600 hover:bg-blue-700"
-          } rounded`}
-        >
-          &gt;
-        </button>
+      <div className="flex items-center justify-between mt-4">
+        {/* Pagination Controls */}
+        <div className="flex items-center justify-center flex-grow-0 w-full">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+            className={`px-3 py-1 text-sm ${
+              currentPage === 1
+                ? "text-gray-400 bg-gray-200 cursor-not-allowed"
+                : "text-white bg-blue-600 hover:bg-blue-700"
+            } rounded`}
+          >
+            &lt;
+          </button>
+          <span className="mx-2 text-gray-800 dark:text-gray-300">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+            className={`px-3 py-1 text-sm ${
+              currentPage === totalPages
+                ? "text-gray-400 bg-gray-200 cursor-not-allowed"
+                : "text-white bg-blue-600 hover:bg-blue-700"
+            } rounded`}
+          >
+            &gt;
+          </button>
+        </div>
+        <RecordsPerPage setItemsPerPage={setItemsPerPage} />
+        {/* Records Per Page */}
+        {/* <div className="flex items-center ml-auto">
+          <label className="mr-2 text-sm text-gray-800 whitespace-nowrap dark:text-gray-300 w-full">
+            Records per page:
+          </label>
+          <select 
+          onChange={(e) => setItemsPerPage(parseInt(e.target.value))}
+          className="px-2 py-1 border rounded">
+            <option value={6}>6</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value={20}>20</option>
+          </select>
+        </div> */}
       </div>
+
       {isModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
@@ -243,9 +330,7 @@ export default function AdminResturantTable() {
             className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
           >
-            <h2 className="text-lg font-semibold text-white">
-              Are you sure?
-            </h2>
+            <h2 className="text-lg font-semibold text-white">Are you sure?</h2>
             <p className="mt-2 text-white">
               Do you really want to delete this item? This action cannot be
               undone.
@@ -338,24 +423,3 @@ export default function AdminResturantTable() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

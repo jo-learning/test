@@ -2,15 +2,9 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { MdOutlineRestaurant, MdOutlineFamilyRestroom } from "react-icons/md";
-import { IoFastFoodSharp } from "react-icons/io5";
-import { BiSolidDrink } from "react-icons/bi";
-import { FaCar } from "react-icons/fa";
-import { TbCategory2 } from "react-icons/tb";
-import { FaPerson } from "react-icons/fa6";
-import { FiMenu, FiChevronLeft } from "react-icons/fi"; // Toggle icons
+
 
 const DashboardLayout = ({ children }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar toggle state
 
   return (
     <div className="min-h-screen bg-gray-100">
