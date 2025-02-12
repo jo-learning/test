@@ -1,35 +1,39 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // import { CiCirclePlus } from 'react-icons/ci';
 import { NavLink } from 'react-router-dom';
+import { apiClient } from '../../../data/services/apiClient';
 
 const VehicleForm = () => {
   const [formData, setFormData] = useState({
-    type: '',
-    model: '',
+    vehicleType: '',
+    vehicleModel: '',
     license: '',
-    platenumber: '',
-    workingHours: [{ key: '', value: '' }],
-    insurance: '',
-    currentlocation: '',
+    plateNumber: '',
+    workingHours: '',
+    insurance: [{ key: '', value: '' }],
+    currentLocation: [{ long: '', lat: '' }],
+    driverId: ''
   });
+  // const [image, setImage] = useState(null);
 
-  const [previewUrl, setPreviewUrl] = useState(null); // Store the preview URL
+  // const [previewUrl, setPreviewUrl] = useState(null); // Store the preview URL
+  const [drivers, setDrivers] = useState([])
 
   // Handle file input change
-  const handleFileChange = (event) => {
-    const file = event.target.files[0]; // Get the selected file
-    if (file) {
-      // setImage(file);
+  // const handleFileChange = (event) => {
+  //   const file = event.target.files[0]; // Get the selected file
+  //   if (file) {
+  //     // setImage(file);
 
-      // Generate a preview URL
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewUrl(reader.result); // Set the preview URL
-        console.log("ready");
-      };
-      reader.readAsDataURL(file); // Read the file as a data URL
-    }
-  };
+  //     // Generate a preview URL
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       setPreviewUrl(reader.result); // Set the preview URL
+  //       console.log("ready");
+  //     };
+  //     reader.readAsDataURL(file); // Read the file as a data URL
+  //   }
+  // };
 
   const handleChange = (e, field, index = null) => {
     const { name, value } = e.target;
@@ -48,10 +52,36 @@ const VehicleForm = () => {
 //     setFormData(newData);
 //   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     console.log(formData);
+    const response = await apiClient.post("/api/vehicle/addVehicle", formData, {
+      headers: "multipart/form-data"
+    })
+    console.log(response);
+    // if (response.data.data.sucess == true){
+    //   setFormData({
+    //     name: "",
+    //     sex: "",
+    //     phoneNumber: "",
+    //     username: "",
+    //     password: "",
+    //   })
+    // }
   };
+
+  useEffect(()=>{
+    const fetchdriver = async() => {
+      const res = await apiClient.get("/api/driver/fetchDrivers?page=1&limit=8&sortBy=id&sortOrder=asc")
+      if (res.data.success == true){
+        // console.log(res.data.data)
+        // const a= res.data.data
+        setDrivers(res.data.data)
+        console.log(res.data.data)
+      }
+    }
+    fetchdriver();
+  },[])
 
   return (
     <>
@@ -62,16 +92,35 @@ const VehicleForm = () => {
         <div>
             <label className="block text-sm font-medium">Vehicle Type</label>
             <select
-              name="type"
-              value={formData.type}
-              onChange={(e) => handleChange(e, "type")}
+              name="vehicleType"
+              value={formData.vehicleType}
+              onChange={(e) => handleChange(e, "vehicleType")}
               className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
             >
               <option value="" disabled>
                 Select Type
               </option>
-              <option value="model1">Model 1</option>
-              <option value="model2">Model 2</option>
+              <option value="car">Car</option>
+              <option value="motorcycle">Motorcycle</option>
+              <option value="Bicycle">Bicycle</option>
+              <option value="scooter">Scooter</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Driver</label>
+            <select
+              name="driverId"
+              value={formData.driverId}
+              onChange={(e) => handleChange(e, "driverId")}
+              className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+            >
+              <option value="" disabled>
+                Select Type
+              </option>
+              {drivers.map((driver, index)=>(
+                <option key={index} value={driver.id}>{driver.name}</option>
+              ))}
             </select>
           </div>
       
@@ -79,9 +128,9 @@ const VehicleForm = () => {
         <label className="block text-sm font-medium">Vehicle Model</label>
         <input
           type="text"
-          name="model"
-          value={formData.model}
-          onChange={(e) => handleChange(e, 'model')}
+          name="vehicleModel"
+          value={formData.vehicleModel}
+          onChange={(e) => handleChange(e, 'vehicleModel')}
           className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
         />
       </div>
@@ -96,31 +145,7 @@ const VehicleForm = () => {
         />
       </div>
       
-      <div>
-        <label className="block text-sm font-medium">Image</label>
-        <div className='h-[200px] w-[200px] bg-gray-400 rounded-lg'>
-        {previewUrl && (
-                <div>
-                  {/* <h2>Image Preview:</h2> */}
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    style={{ maxWidth: "100%", maxHeight: "300px" }}
-                  />
-                </div>
-              )}
-        </div>
-        <p>Upload a JPG or PNG image with dimension 291x194 pixel.<br></br> Maximum file size: 1 MB</p>
-        <input
-          type="file"
-          name="image"
-          onChange={(e) => {
-            handleChange(e, 'image')
-            handleFileChange(e)
-          }}
-          className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
-        />
-      </div>
+     
       
       </div>
       <div>
@@ -128,9 +153,9 @@ const VehicleForm = () => {
         <label className="block text-sm font-medium">Plate Number</label>
         <input
           type="text"
-          name="platenumber"
-          value={formData.platenumber}
-          onChange={(e) => handleChange(e, 'platenumber')}
+          name="plateNumber"
+          value={formData.plateNumber}
+          onChange={(e) => handleChange(e, 'plateNumber')}
           className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
         />
       </div>
@@ -138,22 +163,22 @@ const VehicleForm = () => {
         <label className="block text-sm font-medium">Working Hour</label>
         <input
           type="text"
-          name="insurance"
-          value={formData.insurance}
-          onChange={(e) => handleChange(e, 'insurance')}
+          name="workingHours"
+          value={formData.workingHours}
+          onChange={(e) => handleChange(e, 'workingHours')}
           className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium">Insurance</label>
-        {formData.workingHours.map((item, index) => (
+        <label className="block text-sm font-medium">Insurance </label>
+        {formData.insurance.map((item, index) => (
           <div key={index} className="flex space-x-2">
             <input
               type="text"
               name="key"
               placeholder="Key"
               value={item.key}
-              onChange={(e) => handleChange(e, 'workingHours', index)}
+              onChange={(e) => handleChange(e, 'insurance', index)}
               className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
             />
             <input
@@ -161,7 +186,7 @@ const VehicleForm = () => {
               name="value"
               placeholder="Value"
               value={item.value}
-              onChange={(e) => handleChange(e, 'workingHours', index)}
+              onChange={(e) => handleChange(e, 'insurance', index)}
               className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
             />
             
@@ -174,14 +199,29 @@ const VehicleForm = () => {
       {/* Repeat similar blocks for Phone, Ambiance, Website, Social Media, Cuisine Type, Address */}
 
       <div>
-        <label className="block text-sm font-medium">Current Location</label>
-        <input
-          type="text"
-          name="currentlocation"
-          value={formData.currentlocation}
-          onChange={(e) => handleChange(e, 'currentlocation')}
-          className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
-        />
+        <label className="block text-sm font-medium">Current Location </label>
+        {formData.currentLocation.map((item, index) => (
+          <div key={index} className="flex space-x-2">
+            <input
+              type="text"
+              name="long"
+              placeholder="Longitude"
+              value={item.key}
+              onChange={(e) => handleChange(e, 'currentLocation', index)}
+              className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+            />
+            <input
+              type="text"
+              name="lat"
+              placeholder="Latitude"
+              value={item.value}
+              onChange={(e) => handleChange(e, 'currentLocation', index)}
+              className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+            />
+            
+          </div>
+        ))}
+        
       </div>
 
       <button type="submit" className="w-full py-3 bg-blue-500 text-white rounded-lg">

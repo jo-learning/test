@@ -3,16 +3,19 @@ import React, { useEffect, useState } from "react";
 import FeedbackForm from "./ratingComponent";
 import { useParams } from "react-router-dom";
 import { apiClient } from "../../data/services/apiClient";
+import ProductCard from "./ProductCard";
 
-const ProductDetailPage = () => {
+const RestaurantDetailPage = () => {
   const { id } = useParams();
-  const [food, setFood] = useState([]);
+  const [restaurant, setRestaurant] = useState([]);
   const [review, setReview] = useState([]);
 
   const handleFetchFood = async () => {
-    const res = await apiClient.get(`/api/food/getSingleFood/${id}`);
-    const res1 = await apiClient.get(`/api/reviews/fetchFoodReview/${id}`);
-    setFood(res.data.data);
+    const res = await apiClient.get(`/api/restaurant/getSingleRestaurant/${id}`);
+    const res1 = await apiClient.get(`/api/reviews/fetchRestaurantReview/${id}`);
+    setRestaurant(res.data.data);
+    console.log(res);
+    // console.log(res1);
     setReview(res1.data.data);
   };
 
@@ -31,14 +34,30 @@ const ProductDetailPage = () => {
   return (
     <div className="max-w-screen-lg mx-auto p-6 space-y-8">
       {/* Product Details */}
-      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6">
-        <div className="flex flex-col md:flex-row gap-8">
+      <div className="">
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="">
+          <div className="h-[130px] rounded-lg">
           <img
             src="https://via.placeholder.com/400"
             alt="Product"
             className="w-full md:w-1/2 rounded-lg object-cover shadow-md"
-          />
-          <div className="flex-1">
+          /></div>
+          <h3 className="text-center">{restaurant.name}</h3>
+          <p>{restaurant.description}</p>
+          </div>
+          <div className="bg-white flex-1 dark:bg-gray-800 shadow-lg rounded-xl p-6">
+          {
+            restaurant.foods && (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {restaurant.foods.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+            )
+          }
+          </div>
+          {/* <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-4">
               {food.name}
             </h1>
@@ -69,12 +88,12 @@ const ProductDetailPage = () => {
                 ))}
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
       {/* Feedback Form */}
-      <FeedbackForm foodId={food.id} />
+      {/* <FeedbackForm foodId={food.id} /> */}
 
       {/* Reviews Section */}
       <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6">
@@ -103,4 +122,4 @@ const ProductDetailPage = () => {
   );
 };
 
-export default ProductDetailPage;
+export default RestaurantDetailPage;

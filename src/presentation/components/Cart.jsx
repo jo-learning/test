@@ -32,7 +32,6 @@
 //     <div className="mt-5 mb-10 sm:mb-0 p-6 max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg">
 //       <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">Shopping Cart</h2>
 
-
 //         {/* Billing Address Form */}
 //         <div className="mt-8 p-6 bg-gray-100 rounded-lg shadow-md dark:bg-gray-700">
 //             <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Billing Address</h3>
@@ -106,7 +105,7 @@
 //               </div>
 //             </form>
 //           </div>
-      
+
 //       {cartItems.length === 0 ? (
 //         <p className="text-center text-gray-600 dark:text-gray-300">Your cart is empty.</p>
 //       ) : (
@@ -133,8 +132,6 @@
 //             <p className="text-2xl font-bold text-primary">${total}</p>
 //           </div>
 
-        
-
 //           <button className="mt-6 w-full bg-brand-primary text-white p-3 rounded-lg text-lg font-semibold shadow-md hover:bg-blue-700 transition-colors duration-200">
 //             Checkout
 //           </button>
@@ -145,17 +142,42 @@
 // }
 
 // export default Cart;
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect, useContext } from "react";
-import { AiFillDelete, AiFillMinusCircle, AiFillPlusCircle } from "react-icons/ai";
+import {
+  AiFillDelete,
+  AiFillMinusCircle,
+  AiFillPlusCircle,
+} from "react-icons/ai";
 import ProductContext from "../../shared/utils/ProductContext";
 import CounterContext from "../../shared/utils/CartCounter";
+import UserContext from "../../shared/utils/UserContext";
+import { useNavigate } from "react-router-dom";
+import { apiClient } from "../../data/services/apiClient";
 
 const Table = () => {
   // Load initial data from localStorage or use default
   const initialData = JSON.parse(localStorage.getItem("tableData")) || [];
+  const navigate = useNavigate();
   const [data, setData] = useState(initialData);
-  const {formData, deleteData} = useContext(ProductContext)
-  const {deleteCounter} = useContext(CounterContext)
+  // const {formData, deleteData} = useContext(ProductContext)
+  const { deleteData } = useContext(ProductContext);
+  const { deleteCounter } = useContext(CounterContext);
+  const { user, checkUser } = useContext(UserContext);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    address: "",
+    phone: "",
+    paymentMethod: "credit-card",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
@@ -166,11 +188,29 @@ const Table = () => {
   const handleIncrement = (id) => {
     setData((prevData) =>
       prevData.map((item) =>
-        item.id === id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
+        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
       )
     );
+  };
+  const handleCheckout = async (e) => {
+    e.preventDefault();
+    console.log(user);
+    let result = data.map((obj) => {
+      let newObj = { ...obj }; // Create a shallow copy of the object
+      delete newObj.id; // Remove the 'id' key
+      delete newObj.item;
+      newObj.totalPrice = newObj.price;
+      delete newObj.price;
+      return newObj; // Return the new object
+    });
+    console.log(result);
+    const order = {
+      userId: user[0].id,
+      recipientDetail: [formData],
+      orderFoods: result,
+    };
+    const response = await apiClient.post("/api/order/createOrder", order);
+    console.log(response);
   };
 
   // Handle decrementing quantity
@@ -197,17 +237,27 @@ const Table = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 text-black dark:text-white">
+    <div className="container mx-auto p-4 text-black dark:text-white ">
       <div className="overflow-x-auto sm:ml-[160px] mt-5">
         <table className="table-auto w-full">
           <thead className="bg-gray-800 text-white rounded-lg shadow-lg">
             <tr>
               <th className="px-6 py-3 text-left text-sm font-semibold">No</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">Item</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">Quantity</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">Price</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">Total Price</th>
-              <th className="px-6 py-3 text-left text-sm font-semibold">Action</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">
+                Item
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">
+                Quantity
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">
+                Price
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">
+                Total Price
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">
+                Action
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -250,11 +300,121 @@ const Table = () => {
           </tbody>
         </table>
         <div className="flex justify-center ml-[160px] mt-5">
-          <button className="bg-brand-primary text-white px-6 py-2 rounded-lg">
+          <button
+            onClick={() => {
+              if (checkUser()) {
+                setIsOpen(true);
+              } else {
+                navigate("/signin");
+              }
+            }}
+            className="bg-brand-primary text-white px-6 py-2 rounded-lg"
+          >
             Proceed to Checkout
           </button>
         </div>
       </div>
+      {isOpen && (
+        <div className="fixed inset-0 bg-gray-800 text-black dark:text-white bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div className="flex  justify-between">
+              <h2 className="text-xl font-semibold mb-4">Billing Details</h2>
+              <button className="" onClick={() => setIsOpen(false)}>
+                X
+              </button>
+            </div>
+
+            <form onSubmit={handleCheckout}>
+              <div className="mb-4">
+                <label htmlFor="name" className="block text-sm font-medium">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1  block w-full rounded-md p-2 bg-white dark:bg-[#2B2A33] text-black dark:text-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="email" className="block text-sm font-medium">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1 block w-full rounded-md p-2 bg-white dark:bg-[#2B2A33] text-black dark:text-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="email" className="block text-sm font-medium">
+                  Phone
+                </label>
+                <input
+                  type="number"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1 block w-full rounded-md p-2 bg-white dark:bg-[#2B2A33] text-black dark:text-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="address" className="block text-sm font-medium">
+                  Address
+                </label>
+                <textarea
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1 block w-full rounded-md p-2 bg-white dark:bg-[#2B2A33] text-black dark:text-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                ></textarea>
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="paymentMethod"
+                  className="block text-sm font-medium"
+                >
+                  Payment Method
+                </label>
+                <select
+                  id="paymentMethod"
+                  name="paymentMethod"
+                  value={formData.paymentMethod}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md p-2 bg-white dark:bg-[#2B2A33] text-black dark:text-white border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                >
+                  <option value="credit-card">Credit Card</option>
+                  <option value="paypal">PayPal</option>
+                  <option value="bank-transfer">Bank Transfer</option>
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              >
+                Submit
+              </button>
+            </form>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

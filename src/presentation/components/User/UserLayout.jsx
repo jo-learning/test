@@ -20,7 +20,7 @@ const DashboardLayout = ({ children }) => {
             
             <li>
               <NavLink
-                to="/readytable"
+                to="/orders"
                 className={({ isActive }) =>
                   `flex items-center ml-12 py-2 text-gray-800 hover:bg-gray-700 rounded ${
                     isActive ? "border-b-2 border-blue-600" : ""
@@ -30,7 +30,7 @@ const DashboardLayout = ({ children }) => {
                 <span className="flex justify-center mr-2 ">
                   <LuLayoutDashboard />
                 </span>
-                {"Ready"}
+                {"Orders"}
               </NavLink>
             </li>
             <li>
@@ -45,7 +45,7 @@ const DashboardLayout = ({ children }) => {
                 <span className="flex justify-center mr-2">
                   <MdOutlineFamilyRestroom />
                 </span>
-                {"Progress"}
+                {"Reviews"}
               </NavLink>
             </li>
             <li>
@@ -68,7 +68,7 @@ const DashboardLayout = ({ children }) => {
       </div>
 
       {/* Main Content */}
-      <div className="bg-gray-100 dark:bg-gray-900 p-6">{children}</div>
+      <div className=" p-6">{children}</div>
     </div>
   );
 };

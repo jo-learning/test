@@ -1,34 +1,47 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect, useContext } from "react";
 import ThemeContext from "../../shared/utils/ThemeContext";
 import CounterContext from "../../shared/utils/CartCounter";
 import { Link } from "react-router-dom";
-import { BsFillSunFill, BsFillMoonFill, BsSearch } from "react-icons/bs";
+import { BsSearch } from "react-icons/bs";
 import { CiSliderVertical } from "react-icons/ci";
 import image1 from "../../assets/zos.png";
 import { FaShoppingCart } from "react-icons/fa";
 import { MdDarkMode, MdLightMode } from "react-icons/md";
 import UserContext from "../../shared/utils/UserContext";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
-  const [cartCount, setCartCount] = useState(0);
+  // const [cartCount, setCartCount] = useState(0);
   const { theme, toggleTheme } = useContext(ThemeContext);
   const {counter} = useContext(CounterContext);
-  const {user, LoggedOutUser} = useContext(UserContext);
+  const {user, LoggedOutUser, checkUser, checkInNavBar} = useContext(UserContext);
   const [isOpen, setIsOpen] = useState(false);
+  const navigator = useNavigate()
 
   const handleLogout = () => {
     console.log("Logged out");
     LoggedOutUser();
+    navigator('/')
     // Add your logout logic here
   };
 
-  const addItemToCart = () => {
-    setCartCount(cartCount + 1); // Example function to increment cart count
-  };
+  // const addItemToCart = () => {
+  //   setCartCount(cartCount + 1); // Example function to increment cart count
+  // };
 
   // Load theme preference from localStorage on initial load
   useEffect(() => {
-
+    // console.log(user)
+    const handleCheckUser = async() =>{
+    // console.log("outside is working")
+    const checkuser = await checkInNavBar()
+    console.log(checkuser)
+    if (!checkuser){
+      // console.log("this is working")
+      LoggedOutUser()
+    }}
+    handleCheckUser()
   }, []);
 
   return (
@@ -95,13 +108,10 @@ function Navbar() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
           <div className="py-2">
-            <button
-              onClick={() => console.log("Go to Profile")}
-              className="block w-full px-4 py-2 text-sm text-gray-400 bg-white hover:bg-gray-700"
-            >
-              Profile
-            </button>
-            <Link to={'/dashboard'}>
+            
+            {
+              user[3].role === "user" && (
+                <Link to={'/dashboard'}>
             <button
               onClick={() => console.log("Go to Profile")}
               className="block w-full px-4 py-2 text-sm text-gray-400 bg-white hover:bg-gray-700"
@@ -109,6 +119,32 @@ function Navbar() {
               Dashboard
             </button>
             </Link>
+              )
+            }
+            {
+              user[3].role === "driver" && (
+                <Link to={'/readytable'}>
+            <button
+              onClick={() => console.log("Go to Profile")}
+              className="block w-full px-4 py-2 text-sm text-gray-400 bg-white hover:bg-gray-700"
+            >
+              Ready Items
+            </button>
+            </Link>
+              )
+            }
+            {
+              user[3].role === "restaurant" && (
+                <Link to={'/restaurantdashboard'}>
+            <button
+              onClick={() => console.log("Go to Profile")}
+              className="block w-full px-4 py-2 text-sm text-gray-400 bg-white hover:bg-gray-700"
+            >
+              Dashboard
+            </button>
+            </Link>
+              )
+            }
             <button
               onClick={handleLogout}
               className="block w-full px-4 py-2 text-sm text-gray-400 bg-white hover:bg-gray-700"

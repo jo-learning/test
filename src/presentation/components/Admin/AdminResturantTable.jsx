@@ -1,85 +1,63 @@
 import { useState,useEffect } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
+import { apiClient } from "../../../data/services/apiClient";
+import { PulseLoader } from "react-spinners";
 
 // import recordsPerPage from "../lib/recordsPerPage";
 
-import { CSVLink } from "react-csv";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+
 import RecordsPerPage from "../lib/recordsPerPage";
 import DownloadCSVorPDF from "../lib/download";
+import { FaMinusCircle, FaPlusCircle } from "react-icons/fa";
+import useDebounce from "../lib/debounceSearch";
 
 export default function AdminResturantTable() {
   const allUsers = [
-    {
-      id: "USR001",
-      restaurantName: "Shege",
-      fullName: "John Doe",
-      email: "john.doe@example.com",
-      phone: "123-456-7890",
-      address: "123 Elm Street, Springfield",
-    },
-    {
-      id: "USR002",
-      fullName: "Jane Smith",
-      restaurantName: "Shege",
-      email: "jane.smith@example.com",
-      phone: "987-654-3210",
-      address: "456 Oak Avenue, Metropolis",
-    },
-    {
-      id: "USR003",
-      fullName: "Alice Johnson",
-      restaurantName: "Shege",
-      email: "alice.johnson@example.com",
-      phone: "555-123-4567",
-      address: "789 Pine Road, Gotham",
-    },
-    {
-      id: "USR004",
-      fullName: "Bob Brown",
-      restaurantName: "Shege",
-      email: "bob.brown@example.com",
-      phone: "555-987-6543",
-      address: "321 Cedar Lane, Star City",
-    },
-    {
-      id: "USR005",
-      fullName: "Cathy White",
-      restaurantName: "Shege",
-      email: "cathy.white@example.com",
-      phone: "444-555-6666",
-      address: "654 Maple Boulevard, Central City",
-    },
+  
   ];
 
-  const [users, setUsers] = useState(allUsers);
+  const [firsttimeloading, setFirstTimeLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
+
+  // const [users, setUsers] = useState(allUsers);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   
 
   const handleEditClick = (user) => {
+    
+    // user.phoneNumber = JSON.parse(user.phoneNumber);
+    // // user.workingHours = JSON.parse(user.workingHours);
+    // user.email = JSON.parse(user.email)
+    // user.website = JSON.parse(user.website)
+    // user.socialMedia = JSON.parse(user.socialMedia)
+    // user.cuisineType = JSON.parse(user.cuisineType)
+    // user.geoLocation = JSON.parse(user.geoLocation)
+
     setEditingUser(user);
+    console.log(user)
     setIsEditModalOpen(true);
   };
 
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditingUser((prev) => ({ ...prev, [name]: value }));
-  };
+  
 
-  const handleEditSave = () => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === editingUser.id ? editingUser : user))
-    );
-    setIsEditModalOpen(false);
-  };
+  // const handleEditChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setEditingUser((prev) => ({ ...prev, [name]: value }));
+  // };
 
-  const handleEditCancel = () => {
-    setEditingUser(null);
-    setIsEditModalOpen(false);
-  };
+  // const handleEditSave = () => {
+  //   setUsers((prevUsers) =>
+  //     prevUsers.map((user) => (user.id === editingUser.id ? editingUser : user))
+  //   );
+  //   setIsEditModalOpen(false);
+  // };
+
+  // const handleEditCancel = () => {
+  //   setEditingUser(null);
+  //   setIsEditModalOpen(false);
+  // };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -93,6 +71,41 @@ export default function AdminResturantTable() {
   };
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  const debouncedSearchQuery = useDebounce(searchTerm, 500); // 500ms debounce delay
+
+  useEffect(() => {
+    if (debouncedSearchQuery) {
+      // Perform the search API call or logic here
+      console.log('Searching for:', debouncedSearchQuery);
+
+      const handleSearch = async() => {
+        setCurrentPage(1); // Reset to the first page on a new search
+    const response = await apiClient.get(`/api/restaurant/fetchRestaurants?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc&search=${debouncedSearchQuery}`)
+    console.log(response)
+    let user = response.data.data;
+    for (let i = 0; i < user.length; i++){
+      user[i].phoneNumber = JSON.parse(user[i].phoneNumber);
+    // user[i].workingHours = JSON.parse(user[i].workingHours);
+    user[i].email = JSON.parse(user[i].email)
+    user[i].website = JSON.parse(user[i].website)
+    user[i].socialMedia = JSON.parse(user[i].socialMedia)
+    user[i].cuisineType = JSON.parse(user[i].cuisineType)
+    user[i].geoLocation = JSON.parse(user[i].geoLocation)
+   
+    }
+    setSortedUsers(user);
+    setTotalPages(response.data.pagination.total)
+      }
+      handleSearch()
+
+
+
+
+    }
+  }, [debouncedSearchQuery]);
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(3)
   // const itemsPerPage = 3;
@@ -103,11 +116,11 @@ export default function AdminResturantTable() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const displayedUsers = filteredUsers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const [totalPages,setTotalPages] = useState(0)
+  // const displayedUsers = filteredUsers.slice(
+  //   (currentPage - 1) * itemsPerPage,
+  //   currentPage * itemsPerPage
+  // );
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
   const [sortedUsers, setSortedUsers] = useState(
@@ -117,25 +130,99 @@ export default function AdminResturantTable() {
     )
   );
 
-  const handleSort = (column) => {
+
+  const handleChange = (e, field, index = null) => {
+    const { name, value } = e.target;
+    if (index !== null) {
+      const updatedField = [...editingUser[field]];
+      updatedField[index][name] = value;
+      setEditingUser({ ...editingUser, [field]: updatedField });
+    } else {
+      setEditingUser({ ...editingUser, [name]: value });
+    }
+  };
+
+  const handleAddInput = (field, index = null) => {
+    const newData = { ...editingUser };
+    if (index !== null) {
+      setLast({ ...last, [field]: index + 1 });
+    }
+    newData[field].push({ key: "", value: "" });
+    setEditingUser(newData);
+  };
+
+  const handleDeleteInput = (field, index) => {
+    if (index !== null) {
+      setLast({ ...last, [field]: last[field] - 1 });
+    }
+    const updatedArray = [...sortedUsers[field]];
+    updatedArray.splice(index, 1); // Remove at specific index
+    setEditingUser({
+      ...sortedUsers,
+      [field]: updatedArray,
+    });
+  };
+
+
+  const [last, setLast] = useState({
+    workingHours: 0,
+    email: 0,
+    phoneNumber: 0,
+    // ambiance: 0,
+    website: 0,
+    socialMedia: 0,
+    cuisineType: 0,
+    address: 0,
+  });
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    // eslint-disable-next-line no-unused-vars
+    let user = [editingUser].map(({foods, orders,restaurantReviews, ...rest})=> rest)
+    user[0].email = [JSON.stringify(user[0].email)]
+    user[0].phoneNumber = [JSON.stringify(user[0].phoneNumber)]
+    user[0].website = [JSON.stringify(user[0].website)]
+    user[0].socialMedia = [JSON.stringify(user[0].socialMedia)]
+    user[0].cuisineType = [JSON.stringify(user[0].cuisineType)]
+    user[0].geoLocation = [JSON.stringify(user[0].geoLocation)]
+    console.log(user)
+    const res = await apiClient.put(`/api/restaurant/updateRestaurant/${editingUser.id}`, user[0]);
+    console.log(res);
+    
+  }
+
+  const handleSort = async(column) => {
     const direction =
       sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
     setSortColumn(column);
     setSortDirection(direction);
+    console.log(direction)
+
+    const response = await apiClient.get(`/api/restaurant/fetchRestaurants?page=${currentPage}&limit=${itemsPerPage}&sortBy=${column}&sortOrder=${direction}`)
+    console.log(response)
+    let user = response.data.data;
+    for (let i = 0; i < user.length; i++){
+      user[i].phoneNumber = JSON.parse(user[i].phoneNumber);
+    // user[i].workingHours = JSON.parse(user[i].workingHours);
+    user[i].email = JSON.parse(user[i].email)
+    user[i].website = JSON.parse(user[i].website)
+    user[i].socialMedia = JSON.parse(user[i].socialMedia)
+    user[i].cuisineType = JSON.parse(user[i].cuisineType)
+    user[i].geoLocation = JSON.parse(user[i].geoLocation)
+   
+    }
 
     // Sort the users array
-    const sortedData = [...displayedUsers].sort((a, b) => {
-      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
-      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
-      return 0;
-    });
+    // const sortedData = [...displayedUsers].sort((a, b) => {
+    //   if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
+    //   if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
+    //   return 0;
+    // });
 
-    setSortedUsers(sortedData);
+    setSortedUsers(user);
   };
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = async(e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to the first page on a new search
   };
 
 
@@ -148,26 +235,59 @@ export default function AdminResturantTable() {
     { label: "Address", key: "address" },
   ];
 
+  const handleFetchRestaurant = async()=>{
+    const response = await apiClient.get(`/api/restaurant/fetchRestaurants?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc`)
+    console.log(response)
+    let user = response.data.data;
+    for (let i = 0; i < user.length; i++){
+      user[i].phoneNumber = JSON.parse(user[i].phoneNumber);
+    // user[i].workingHours = JSON.parse(user[i].workingHours);
+    user[i].email = JSON.parse(user[i].email)
+    user[i].website = JSON.parse(user[i].website)
+    user[i].socialMedia = JSON.parse(user[i].socialMedia)
+    user[i].cuisineType = JSON.parse(user[i].cuisineType)
+    user[i].geoLocation = JSON.parse(user[i].geoLocation)
+   
+    }
+    setSortedUsers(user);
+    setTotalPages(response.data.pagination.total)
+    
+    
+  }
 
   useEffect(()=>{
-    const column = "id"
+    // const column = "id"
     // setSortedUsers(filteredUsers.slice(
     //   (currentPage - 1) * itemsPerPage,
     //   currentPage * itemsPerPage
     // ))
-    const direction =
-      sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
-    setSortColumn(column);
-    setSortDirection(direction);
-    const sortedData = [...displayedUsers].sort((a, b) => {
-      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
-      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
-      return 0;
-    });
+    setFirstTimeLoading(true)
+    handleFetchRestaurant()
+    setFirstTimeLoading(false);
+    // const direction =
+    //   sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
+    // setSortColumn(column);
+    // setSortDirection(direction);
+    // const sortedData = [...displayedUsers].sort((a, b) => {
+    //   if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
+    //   if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
+    //   return 0;
+    // });
 
-    setSortedUsers(sortedData);
+    // setSortedUsers(sortedData);
 
   },[currentPage, searchTerm, itemsPerPage])
+
+  if (firsttimeloading){
+    return (
+      <div className="flex justify-center">
+      <PulseLoader
+      color="#ffffff"
+      loading={firsttimeloading}
+      size={10}
+      /></div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
@@ -175,7 +295,7 @@ export default function AdminResturantTable() {
         Restaurant
       </h1>
      
-      <DownloadCSVorPDF sortedUsers={sortedUsers} csvHeaders={csvHeaders} tableName={"Restaurant Table"} />
+      
 
       {/* Search Bar and Add Restaurant Button */}
       <div className="mb-4 flex justify-between items-center">
@@ -186,7 +306,7 @@ export default function AdminResturantTable() {
           onChange={handleSearchChange}
           className="w-full px-4 py-2 text-gray-800 bg-white border rounded-md dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 mr-4"
         />
-
+        <DownloadCSVorPDF sortedUsers={sortedUsers} csvHeaders={csvHeaders} tableName={"Restaurant Table"} />
         <div className="flex justify-end mb-2">
           <NavLink to={"/resturantform"}>
             <button className="px-4 py-2 whitespace-nowrap  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
@@ -224,51 +344,63 @@ export default function AdminResturantTable() {
             </tr>
           </thead>
           <tbody>
-            {sortedUsers.map((user, index) => (
+            {
+              sortedUsers.length == 0 ?
               <tr
-                key={index}
-                className={`${
-                  index % 2 === 0
-                    ? "bg-gray-100 dark:bg-gray-900"
-                    : "bg-gray-50 dark:bg-gray-800"
-                }`}
-              >
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.id}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.restaurantName}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.fullName}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.email}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.phone}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.address}
-                </td>
-                <td className="flex px-4 py-3">
-                  <button
-                    onClick={() => {
-                      handleEditClick(user);
-                    }}
-                    className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={toggleModal}
-                    className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+              aria-colspan={"5"}
+              className={`${
+                   "bg-gray-50 dark:bg-blue-800 w- justify-center items-center text-center"
+              }`}
+              > No Restaurants</tr> 
+              :
+              sortedUsers.map((user, index) => (
+                <tr
+                  key={index}
+                  className={`${
+                    index % 2 === 0
+                      ? "bg-gray-100 dark:bg-gray-900"
+                      : "bg-gray-50 dark:bg-gray-800"
+                  }`}
+                >
+                  <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                    {user.id}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                    {user.name}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                    {user.username}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                    {user.email[0].value}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                    {user.phoneNumber[0].value}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
+                    {user.address}
+                  </td>
+                  <td className="flex px-4 py-3">
+                    <button
+                      onClick={() => {
+                        handleEditClick(user);
+                      }}
+                      className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={toggleModal}
+                      className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            }
+            
+
           </tbody>
         </table>
       </div>
@@ -355,71 +487,393 @@ export default function AdminResturantTable() {
 
       {/* Edit Modal */}
       {isEditModalOpen && editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className=" fixed inset-0 z-50 flex  justify-center bg-black bg-opacity-50 overflow-y-scroll ">
           <div
-            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
+            className="mt-20 bg-gray-600 rounded-lg shadow-lg p-6 w-[700px] overflow-auto "
             onClick={(e) => e.stopPropagation()}
           >
+            <div className="flex justify-between">
             <h2 className="text-lg font-semibold text-white">Edit Food</h2>
+            <button onClick={()=>setIsEditModalOpen(false)}>X</button></div>
             <div className="mt-4">
-              <input
-                type="text"
-                name="foodName"
-                value={editingUser.foodName}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Food Name"
-              />
-              <input
-                type="text"
-                name="restaurantName"
-                value={editingUser.restaurantName}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Restaurant Name"
-              />
-              <input
-                type="text"
-                name="category"
-                value={editingUser.category}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Category"
-              />
-              <input
-                type="text"
-                name="price"
-                value={editingUser.price}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Price"
-              />
-              <input
-                type="text"
-                name="phone"
-                value={editingUser.phone}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Phone"
-              />
-            </div>
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={handleEditCancel}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleEditSave}
-                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-              >
-                Save
-              </button>
-            </div>
+              
+            <form
+            onSubmit={handleSubmit}
+        className="flex justify-between text-black dark:text-gray-400 space-y-4 space-x-4  max-w-full max-h-full mx-auto p-6 border rounded-lg shadow-lg"
+      >
+        <div>
+          <div>
+            <label className="block text-sm font-medium">Name</label>
+            <input
+              type="text"
+              name="name"
+              value={editingUser.name}
+              onChange={(e) => handleChange(e, "name")}
+              className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Description</label>
+            <textarea
+              name="description"
+              value={editingUser.description}
+              onChange={(e) => handleChange(e, "description")}
+              className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Username</label>
+            <input
+              type="text"
+              name="username"
+              value={editingUser.username}
+              onChange={(e) => handleChange(e, "username")}
+              className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+            />
+          </div>
+          {/* <div>
+            <label className="block text-sm font-medium">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={editingUser.password}
+              onChange={(e) => handleChange(e, "password")}
+              className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+            />
+          </div> */}
+        </div>
+        <div>
+          {/* <div>
+            <label className="block text-sm font-medium">Working Hours</label>
+            {editingUser.workingHours.map((item, index) => (
+              <div key={index} className="flex space-x-2">
+                <input
+                  type="text"
+                  name="key"
+                  placeholder="Key"
+                  value={item.key}
+                  onChange={(e) => handleChange(e, "workingHours", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                <input
+                  type="text"
+                  name="value"
+                  placeholder="Value"
+                  value={item.value}
+                  onChange={(e) => handleChange(e, "workingHours", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+
+                {last["workingHours"] == index ? (
+                  <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAddInput("workingHours", index)}
+                      className=" bg-green-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaPlusCircle size={28} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInput("workingHours", index)}
+                      className=" bg-red-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaMinusCircle size={28} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div> */}
+
+          <div>
+            <label className="block text-sm font-medium">email</label>
+            {editingUser.email.map((item, index) => (
+              <div key={index} className="flex space-x-2">
+                <input
+                  type="text"
+                  name="key"
+                  placeholder="Key"
+                  value={item.key}
+                  onChange={(e) => handleChange(e, "email", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                <input
+                  type="email"
+                  name="value"
+                  placeholder="Value"
+                  value={item.value}
+                  onChange={(e) => handleChange(e, "email", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                {last["email"] == index ? (
+                  <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAddInput("email", index)}
+                      className=" bg-green-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaPlusCircle size={28} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInput("email", index)}
+                      className=" bg-red-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaMinusCircle size={28} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Phone Number</label>
+            {editingUser.phoneNumber.map((item, index) => (
+              <div key={index} className="flex space-x-2">
+                <input
+                  type="text"
+                  name="key"
+                  placeholder="Key"
+                  value={item.key}
+                  onChange={(e) => handleChange(e, "phoneNumber", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                <input
+                  type="phone"
+                  name="value"
+                  placeholder="Value"
+                  value={item.value}
+                  onChange={(e) => handleChange(e, "phoneNumber", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                {last["phoneNumber"] == index ? (
+                  <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAddInput("phoneNumber", index)}
+                      className=" bg-green-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaPlusCircle size={28} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInput("phoneNumber", index)}
+                      className=" bg-red-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaMinusCircle size={28} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div>
+            <label className="block text-sm font-medium">website</label>
+            {editingUser.website.map((item, index) => (
+              <div key={index} className="flex space-x-2">
+                <input
+                  type="text"
+                  name="key"
+                  placeholder="Key"
+                  value={item.key}
+                  onChange={(e) => handleChange(e, "website", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                <input
+                  type="website"
+                  name="value"
+                  placeholder="Value"
+                  value={item.value}
+                  onChange={(e) => handleChange(e, "website", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                {last["website"] == index ? (
+                  <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAddInput("website", index)}
+                      className=" bg-green-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaPlusCircle size={28} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInput("website", index)}
+                      className=" bg-red-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaMinusCircle size={28} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Social Media</label>
+            {editingUser.socialMedia.map((item, index) => (
+              <div key={index} className="flex space-x-2">
+                <input
+                  type="text"
+                  name="key"
+                  placeholder="Key"
+                  value={item.key}
+                  onChange={(e) => handleChange(e, "socialMedia", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                <input
+                  type="socialMedia"
+                  name="value"
+                  placeholder="Value"
+                  value={item.value}
+                  onChange={(e) => handleChange(e, "socialMedia", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                {last["socialMedia"] == index ? (
+                  <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAddInput("socialMedia", index)}
+                      className=" bg-green-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaPlusCircle size={28} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInput("socialMedia", index)}
+                      className=" bg-red-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaMinusCircle size={28} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Cuisine Type</label>
+            {editingUser.cuisineType.map((item, index) => (
+              <div key={index} className="flex space-x-2">
+                <input
+                  type="text"
+                  name="key"
+                  placeholder="Key"
+                  value={item.key}
+                  onChange={(e) => handleChange(e, "cuisineType", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                <input
+                  type="cuisineType"
+                  name="value"
+                  placeholder="Value"
+                  value={item.value}
+                  onChange={(e) => handleChange(e, "cuisineType", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                {last["cuisineType"] == index ? (
+                  <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAddInput("cuisineType", index)}
+                      className=" bg-green-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaPlusCircle size={28} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInput("cuisineType", index)}
+                      className=" bg-red-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaMinusCircle size={28} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+
+          <div>
+            <label className="block text-sm font-medium">Geo Location</label>
+            {editingUser.geoLocation.map((item, index) => (
+              <div key={index} className="flex space-x-2">
+                <input
+                  type="text"
+                  name="lat"
+                  placeholder="lat"
+                  value={item.key}
+                  onChange={(e) => handleChange(e, "geoLocation", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                <input
+                  type="cuisineType"
+                  name="long"
+                  placeholder="long"
+                  value={item.value}
+                  onChange={(e) => handleChange(e, "geoLocation", index)}
+                  className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+                {last["cuisineType"] == index ? (
+                  <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAddInput("cuisineType", index)}
+                      className=" bg-green-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaPlusCircle size={28} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInput("cuisineType", index)}
+                      className=" bg-red-500 text-white font-bold m-0 p-0"
+                    >
+                      <FaMinusCircle size={28} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="submit"
+            className="w-full mt-4 py-3 bg-blue-500 text-white rounded-lg"
+          >
+            Submit
+          </button>
+        </div>{/* */}
+      </form>
+              
+              
+              </div>
+            
           </div>
         </div>
       )}
     </div>
+    
   );
 }

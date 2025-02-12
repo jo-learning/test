@@ -1,17 +1,20 @@
-import { useState } from "react";
-import { CiCirclePlus } from "react-icons/ci";
+import { useState, useEffect } from "react";
+// import { CiCirclePlus } from "react-icons/ci";
 import { FaMinusCircle, FaPlusCircle } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+import { apiClient } from "../../../data/services/apiClient";
 
 const FoodForm = () => {
   const [formData, setFormData] = useState({
     name: "",
-    category: "",
+    categoryId: "",
     price: "",
     description: "",
-    image: "", 
-    ingredients: [{ key: "", value: "" }],
+    // image: "uploaded/abb",
+    restaurantId: "e7265202-7ced-4d7e-9f03-4b15b11ff884",
+    ingredients: [{ value: "" }],
   });
+  const [category, setCategory] = useState([]);
 
   const [last, setLast] = useState({
     ingredients: 0,
@@ -31,15 +34,15 @@ const FoodForm = () => {
   const handleAddInput = (field, index = null) => {
     const newData = { ...formData };
     if (index !== null) {
-      setLast({ ...last, [field]: index+1 });
+      setLast({ ...last, [field]: index + 1 });
     }
-    newData[field].push({ key: "", value: "" });
+    newData[field].push({ value: "" });
     setFormData(newData);
   };
 
   const handleDeleteInput = (field, index) => {
     if (index !== null) {
-      setLast({ ...last, [field]: last[field]-1 });
+      setLast({ ...last, [field]: last[field] - 1 });
     }
     const updatedArray = [...formData[field]];
     updatedArray.splice(index, 1); // Remove at specific index
@@ -49,9 +52,28 @@ const FoodForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const handleFetchCategory = async () => {
+      // const response = await fetch(
+      //   "http://localhost:3010/api/category/fetchAllCategories"
+      // );
+      const response = await apiClient.get('/api/category/fetchAllCategories')
+      const data = response.data
+      console.log(data)
+      if (data.success == true) {
+        console.log(data)
+        setCategory(data.data);
+      }
+    };
+    handleFetchCategory();
+  }, []);
+
+  const handleSubmit = async(e) => {
     e.preventDefault();
     console.log(formData);
+    const response = await apiClient.post("/api/food/addFood", formData);
+    console.log(response)
+    
   };
 
   return (
@@ -79,7 +101,7 @@ const FoodForm = () => {
               className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
             />
           </div>
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium">Category</label>
             <input
               type="text"
@@ -88,6 +110,26 @@ const FoodForm = () => {
               onChange={(e) => handleChange(e, "category")}
               className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
             />
+          </div> */}
+          <div>
+            <label className="block text-sm font-medium">Category</label>
+            <select
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={(e) => handleChange(e, "categoryId")}
+              className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+            >
+              <option value="" disabled>
+                Select Category
+              </option>
+              {
+                category.map((cate, index)=>(
+                  <option key={index} value={cate.id}>{cate.name}</option>
+                ))
+              }
+              {/* <option value="model1">Model 1</option>
+              <option value="model2">Model 2</option> */}
+            </select>
           </div>
 
           <div>
@@ -101,8 +143,6 @@ const FoodForm = () => {
             />
           </div>
 
-
-          
           <div>
             <label className="block text-sm font-medium">Image</label>
             <div className="h-[200px] w-[200px] bg-gray-400 rounded-lg"></div>
@@ -117,19 +157,19 @@ const FoodForm = () => {
               className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
             />
           </div>
-          
         </div>
         <div className="w-full">
-
-        <div>
-            <label className="block text-sm font-medium">Food Description</label>
+          <div>
+            <label className="block text-sm font-medium">
+              Food Description
+            </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={(e) => handleChange(e, "description")}
               className="w-full h-[200px] px-4 py-2 mt-2 border rounded-lg bg-white"
             />
-          </div> 
+          </div>
           <div>
             <label className="block text-sm font-medium">Add Ingredients</label>
             {formData.ingredients.map((item, index) => (
@@ -167,8 +207,6 @@ const FoodForm = () => {
               </div>
             ))}
           </div>
-
-          
 
           <button
             type="submit"

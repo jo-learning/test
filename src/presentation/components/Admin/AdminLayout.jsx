@@ -1,14 +1,16 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { MdOutlineRestaurant, MdOutlineFamilyRestroom } from "react-icons/md";
-import { IoFastFoodSharp } from "react-icons/io5";
-import { BiSolidDrink } from "react-icons/bi";
+// import { IoFastFoodSharp } from "react-icons/io5";
+// import { BiSolidDrink } from "react-icons/bi";
 import { FaCar } from "react-icons/fa";
 import { TbCategory2 } from "react-icons/tb";
 import { FaPerson } from "react-icons/fa6";
 import { FiMenu, FiChevronLeft } from "react-icons/fi"; // Toggle icons
 
+// eslint-disable-next-line react/prop-types
 const DashboardLayout = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar toggle state
 
@@ -65,7 +67,7 @@ const DashboardLayout = ({ children }) => {
                 {!isCollapsed && "Dashboard"}
               </NavLink>
             </li>
-            <li>
+            {/* <li>
               <NavLink
                 to="/ordersummary"
                 className={({ isActive }) =>
@@ -79,8 +81,8 @@ const DashboardLayout = ({ children }) => {
                 </span>
                 {!isCollapsed && "Order Summary"}
               </NavLink>
-            </li>
-            <li>
+            </li> */}
+            {/* <li>
               <NavLink
                 to="/customertable"
                 className={({ isActive }) =>
@@ -94,7 +96,7 @@ const DashboardLayout = ({ children }) => {
                 </span>
                 {!isCollapsed && "Customers"}
               </NavLink>
-            </li>
+            </li> */}
             <li>
               <NavLink
                 to="/resturanttable"

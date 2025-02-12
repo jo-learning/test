@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { CiCirclePlus } from "react-icons/ci";
+import { NavLink } from "react-router-dom";
 
-export default function RestaurantFoodTable() {
+export default function DriverProgressTable() {
   const allUsers = [
     {
       id: "USR001",
@@ -153,7 +155,7 @@ export default function RestaurantFoodTable() {
                 </td>
                 <td className="flex px-4 py-3">
                   <button className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
-                    Pick
+                    Done
                   </button>
                   
                 </td>

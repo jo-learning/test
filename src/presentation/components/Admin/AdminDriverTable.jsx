@@ -2,62 +2,18 @@ import { useState, useEffect } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
 
-import { CSVLink } from "react-csv";
-import jsPDF from "jspdf";
+// import { CSVLink } from "react-csv";
+// import jsPDF from "jspdf";
 import "jspdf-autotable";
 import DownloadCSVorPDF from "../lib/download";
 import RecordsPerPage from "../lib/recordsPerPage";
+import { apiClient } from "../../../data/services/apiClient";
+import useDebounce from "../lib/debounceSearch";
 
 export default function AdminDriverTable() {
-  const allUsers = [
-    {
-      id: "USR001",
-      fullName: "John Doe",
-      sex: "male",
-      username: "John",
-      email: "john.doe@example.com",
-      phone: "123-456-7890",
-      address: "123 Elm Street, Springfield",
-    },
-    {
-      id: "USR002",
-      fullName: "Jane Smith",
-      sex: "male",
-      username: "John",
-      email: "jane.smith@example.com",
-      phone: "987-654-3210",
-      address: "456 Oak Avenue, Metropolis",
-    },
-    {
-      id: "USR003",
-      fullName: "Alice Johnson",
-      sex: "male",
-      username: "Alice",
-      email: "alice.johnson@example.com",
-      phone: "555-123-4567",
-      address: "789 Pine Road, Gotham",
-    },
-    {
-      id: "USR004",
-      fullName: "Bob Brown",
-      sex: "male",
-      username: "Bob",
-      email: "bob.brown@example.com",
-      phone: "555-987-6543",
-      address: "321 Cedar Lane, Star City",
-    },
-    {
-      id: "USR005",
-      fullName: "Cathy White",
-      sex: "male",
-      username: "Cathy",
-      email: "cathy.white@example.com",
-      phone: "444-555-6666",
-      address: "654 Maple Boulevard, Central City",
-    },
-  ];
+  const allUsers = [];
 
-  const [users, setUsers] = useState(allUsers);
+  // const [users, setUsers] = useState(allUsers);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
@@ -66,22 +22,22 @@ export default function AdminDriverTable() {
     setIsEditModalOpen(true);
   };
 
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditingUser((prev) => ({ ...prev, [name]: value }));
-  };
+  // const handleEditChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setEditingUser((prev) => ({ ...prev, [name]: value }));
+  // };
 
-  const handleEditSave = () => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === editingUser.id ? editingUser : user))
-    );
-    setIsEditModalOpen(false);
-  };
+  // const handleEditSave = () => {
+  //   setUsers((prevUsers) =>
+  //     prevUsers.map((user) => (user.id === editingUser.id ? editingUser : user))
+  //   );
+  //   setIsEditModalOpen(false);
+  // };
 
-  const handleEditCancel = () => {
-    setEditingUser(null);
-    setIsEditModalOpen(false);
-  };
+  // const handleEditCancel = () => {
+  //   setEditingUser(null);
+  //   setIsEditModalOpen(false);
+  // };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -95,6 +51,34 @@ export default function AdminDriverTable() {
   };
 
   const [searchTerm, setSearchTerm] = useState("");
+
+
+  const debouncedSearchQuery = useDebounce(searchTerm, 500); // 500ms debounce delay
+
+  useEffect(() => {
+    if (debouncedSearchQuery) {
+      // Perform the search API call or logic here
+      console.log('Searching for:', debouncedSearchQuery);
+
+      const handleSearch = async() => {
+        setCurrentPage(1); // Reset to the first page on a new search
+    const response = await apiClient.get(`/api/driver/fetchDrivers?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc&search=${debouncedSearchQuery}`)
+    console.log(response)
+    let user = response.data.data;
+    setSortedUsers(user);
+    setTotalPages(response.data.pagination.total)
+      }
+      handleSearch()
+
+
+
+
+    }
+  }, [debouncedSearchQuery]);
+
+
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   // const itemsPerPage = 3;
@@ -105,11 +89,11 @@ export default function AdminDriverTable() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const displayedUsers = filteredUsers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const [totalPages, setTotalPages] = useState(0);
+  // const displayedUsers = filteredUsers.slice(
+  //   (currentPage - 1) * itemsPerPage,
+  //   currentPage * itemsPerPage
+  // );
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
   const [sortedUsers, setSortedUsers] = useState(
@@ -119,20 +103,19 @@ export default function AdminDriverTable() {
     )
   );
 
-  const handleSort = (column) => {
+  const handleSort = async(column) => {
     const direction =
       sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
     setSortColumn(column);
     setSortDirection(direction);
+    // console.log(direction)
 
-    // Sort the users array
-    const sortedData = [...displayedUsers].sort((a, b) => {
-      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
-      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
-      return 0;
-    });
+    const response = await apiClient.get(`/api/driver/fetchDrivers?page=${currentPage}&limit=${itemsPerPage}&sortBy=${column}&sortOrder=${direction}`)
+    // console.log(response)
+    let user = response.data.data;
 
-    setSortedUsers(sortedData);
+
+    setSortedUsers(user);
   };
 
   const handleSearchChange = (e) => {
@@ -140,35 +123,35 @@ export default function AdminDriverTable() {
     setCurrentPage(1); // Reset to the first page on a new search
   };
 
-  const downloadPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Users Table", 20, 10); // Add title
+  // const downloadPDF = () => {
+  //   const doc = new jsPDF();
+  //   doc.text("Users Table", 20, 10); // Add title
 
-    const tableColumn = [
-      "ID",
-      "Restaurant Name",
-      "Owner Name",
-      "Email",
-      "Phone",
-      "Address",
-    ];
-    const tableRows = sortedUsers.map((user) => [
-      user.id,
-      user.restaurantName,
-      user.fullName,
-      user.email,
-      user.phone,
-      user.address,
-    ]);
+  //   const tableColumn = [
+  //     "ID",
+  //     "Restaurant Name",
+  //     "Owner Name",
+  //     "Email",
+  //     "Phone",
+  //     "Address",
+  //   ];
+  //   const tableRows = sortedUsers.map((user) => [
+  //     user.id,
+  //     user.restaurantName,
+  //     user.fullName,
+  //     user.email,
+  //     user.phone,
+  //     user.address,
+  //   ]);
 
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 20,
-    });
+  //   doc.autoTable({
+  //     head: [tableColumn],
+  //     body: tableRows,
+  //     startY: 20,
+  //   });
 
-    doc.save("users_table.pdf");
-  };
+  //   doc.save("users_table.pdf");
+  // };
 
   const csvHeaders = [
     { label: "ID", key: "id" },
@@ -177,26 +160,48 @@ export default function AdminDriverTable() {
     { label: "User Name", key: "username" },
     { label: "Phone", key: "phone" },
   ];
-
-  useEffect(()=>{
-    const column = "id"
+  const handleFetchDriver = async () => {
+    const response = await apiClient.get(
+      `/api/driver/fetchDrivers?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc`
+    );
+    // console.log(response);
+    setSortedUsers(response.data.data);
+    setTotalPages(response.data.pagination.total);
+  };
+  const handleChange = (e, field, index = null) => {
+    const { name, value } = e.target;
+    if (index !== null) {
+      const updatedField = [...editingUser[field]];
+      updatedField[index][name] = value;
+      setEditingUser({ ...editingUser, [field]: updatedField });
+    } else {
+      setEditingUser({ ...editingUser, [name]: value });
+    }
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(editingUser);
+  };
+  useEffect(() => {
+    // const column = "id";
     // setSortedUsers(filteredUsers.slice(
     //   (currentPage - 1) * itemsPerPage,
     //   currentPage * itemsPerPage
     // ))
-    const direction =
-      sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
-    setSortColumn(column);
-    setSortDirection(direction);
-    const sortedData = [...displayedUsers].sort((a, b) => {
-      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
-      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
-      return 0;
-    });
 
-    setSortedUsers(sortedData);
+    // `http://localhost:3010/api/food/fetchFoods?page=${currentPage}&limit=${itemsPerPage}&sortBy=foodName&sortOrder=asc&search=${searchTerm}`
+    handleFetchDriver();
 
-  },[currentPage, searchTerm, itemsPerPage])
+    // const direction =
+    //   sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
+    // setSortColumn(column);
+    // setSortDirection(direction);
+    // const sortedData = [...displayedUsers].sort((a, b) => {
+    //   if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
+    //   if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
+    //   return 0;
+    // });
+  }, [currentPage, searchTerm, itemsPerPage]);
 
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
@@ -204,7 +209,7 @@ export default function AdminDriverTable() {
         Drivers
       </h1>
 
-      <DownloadCSVorPDF sortedUsers={sortedUsers} csvHeaders={csvHeaders} tableName={"Restaurant Table"} />
+      
 
       {/* Search Bar and Add Restaurant Button */}
       <div className="mb-4 flex justify-between items-center">
@@ -215,16 +220,20 @@ export default function AdminDriverTable() {
           onChange={handleSearchChange}
           className="w-full px-4 py-2 text-gray-800 bg-white border rounded-md dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 mr-4"
         />
+        <DownloadCSVorPDF
+        sortedUsers={sortedUsers}
+        csvHeaders={csvHeaders}
+        tableName={"Restaurant Table"}
+      />
         <div className="flex justify-end mb-2">
-        <NavLink to={"/driverform"}>
-          <button className="px-4 py-2 whitespace-nowrap flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
-            <CiCirclePlus size={28} />
-            Add Driver
-          </button>
-        </NavLink>
+          <NavLink to={"/driverform"}>
+            <button className="px-4 py-2 whitespace-nowrap flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
+              <CiCirclePlus size={28} />
+              Add Driver
+            </button>
+          </NavLink>
+        </div>
       </div>
-      </div>
-      
 
       {/* Users Table */}
       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -266,7 +275,7 @@ export default function AdminDriverTable() {
                   {user.id}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.fullName}
+                  {user.name}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
                   {user.sex}
@@ -275,7 +284,7 @@ export default function AdminDriverTable() {
                   {user.username}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.phone}
+                  {user.phoneNumber}
                 </td>
                 <td className="px-4 py-3">
                   <button
@@ -329,7 +338,7 @@ export default function AdminDriverTable() {
             &gt;
           </button>
         </div>
-        
+
         <RecordsPerPage setItemsPerPage={setItemsPerPage} />
       </div>
       {isModalOpen && (
@@ -367,69 +376,147 @@ export default function AdminDriverTable() {
 
       {/* Edit Modal */}
       {isEditModalOpen && editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div
-            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
-            onClick={(e) => e.stopPropagation()}
+        <div className=" fixed inset-0 z-50 flex  justify-center bg-black bg-opacity-50 overflow-y-scroll ">
+        <div
+          className="mt-20 bg-gray-600 rounded-lg shadow-lg p-6 w-[700px] overflow-auto "
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex justify-between">
+          <h2 className="text-lg font-semibold text-white">Edit Food</h2>
+          <button onClick={()=>setIsEditModalOpen(false)}>X</button></div>
+          <div className="mt-4">
+          <form
+            onSubmit={handleSubmit}
+            className="flex justify-around text-black dark:text-gray-400 space-y-4 space-x-4  max-w-full mx-auto p-6 border rounded-lg shadow-lg"
           >
-            <h2 className="text-lg font-semibold text-white">Edit Food</h2>
-            <div className="mt-4">
+            <div>
+              <div>
+                <label className="block text-sm font-medium">Driver Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={editingUser.name}
+                  onChange={(e) => handleChange(e, "name")}
+                  className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Gender</label>
+                <select
+                  name="sex"
+                  value={editingUser.sex}
+                  onChange={(e) => handleChange(e, "sex")}
+                  className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+                >
+                  <option value="" disabled>
+                    Select Gender
+                  </option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium">
+                  Phone Number
+                </label>
+                <input
+                  type="number"
+                  name="phoneNumber"
+                  value={editingUser.phoneNumber}
+                  onChange={(e) => handleChange(e, "phoneNumber")}
+                  className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+              </div>
+
+              {/* <div>
+              <label className="block text-sm font-medium">Image</label>
+              <div className="h-[200px] w-[200px] bg-gray-400 rounded-lg">
+                {previewUrl && (
+                  <div>
+                    
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      style={{ maxWidth: "100%", maxHeight: "300px" }}
+                    />
+                  </div>
+                )}
+              </div>
+              <p>
+                Upload a JPG or PNG image with dimension 291x194 pixel.<br></br>{" "}
+                Maximum file size: 1 MB
+              </p>
               <input
-                type="text"
-                name="foodName"
-                value={editingUser.foodName}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Food Name"
+                type="file"
+                name="image"
+                onChange={(e) => {
+                  handleFileChange(e);
+                }}
+                className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
               />
-              <input
-                type="text"
-                name="restaurantName"
-                value={editingUser.restaurantName}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Restaurant Name"
-              />
-              <input
-                type="text"
-                name="category"
-                value={editingUser.category}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Category"
-              />
-              <input
-                type="text"
-                name="price"
-                value={editingUser.price}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Price"
-              />
-              <input
-                type="text"
-                name="phone"
-                value={editingUser.phone}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Phone"
-              />
+            </div> */}
             </div>
-            <div className="flex justify-between mt-4">
+            <div>
+              <div>
+                <label className="block text-sm font-medium">
+                  Enter Username
+                </label>
+                <input
+                  type="text"
+                  name="username"
+                  value={editingUser.username}
+                  onChange={(e) => handleChange(e, "username")}
+                  className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+              </div>
+              {/* <div>
+                <label className="block text-sm font-medium">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={editingUser.password}
+                  onChange={(e) => handleChange(e, "password")}
+                  className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+                />
+              </div> */}
+              {/* <div>
+              <label className="block text-sm font-medium">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                name="confirmpassword"
+                value={confirmpassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+              />
+            </div> */}
+              {/* <div>
+              <label className="block text-sm font-medium">
+                address
+              </label>
+              <input
+                type="text"
+                name="address"
+                value={address}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+              />
+            </div> */}
+
+              {/* Repeat similar blocks for Phone, Ambiance, Website, Social Media, Cuisine Type, Address */}
+
               <button
-                onClick={handleEditCancel}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+                type="submit"
+                className="bottom-0 mt-10 w-full py-3 bg-blue-500 text-white rounded-lg"
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleEditSave}
-                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-              >
-                Save
+                Submit
               </button>
             </div>
-          </div>
+          </form>
+        </div>
+        </div>
         </div>
       )}
     </div>

@@ -47,15 +47,15 @@ const DownloadCSVorPDF = ({sortedUsers, csvHeaders, tableName}) => {
           data={sortedUsers}
           headers={csvHeaders}
           filename="users_table.csv"
-          className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          className="px-3 mx-2 mt-4 py-2 border border-green-600 text-black dark:text-white rounded hover:bg-green-700"
         >
-          Download CSV
+          CSV
         </CSVLink>
         <button
           onClick={downloadPDF}
-          className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          className="px-3 py-2 mx-2 mt-4 bg-transparent border border-red-600  text-black dark:text-white rounded hover:bg-red-700"
         >
-          Download PDF
+          PDF
         </button>
       </div>
     );

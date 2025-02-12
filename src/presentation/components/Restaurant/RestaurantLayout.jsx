@@ -95,21 +95,6 @@ const DashboardLayout = ({ children }) => {
                 {!isCollapsed && "Food List"}
               </NavLink>
             </li>
-            <li>
-              <NavLink
-                to="/drinktable"
-                className={({ isActive }) =>
-                  `flex items-center px-4 py-2 text-gray-200 hover:bg-gray-700 rounded ${
-                    isActive ? "bg-gray-700" : ""
-                  }`
-                }
-              >
-                <span className="flex justify-center mx-5">
-                  <MdOutlineRestaurant />
-                </span>
-                {!isCollapsed && "Drink List"}
-              </NavLink>
-            </li>
           </ul>
         </nav>
       </aside>

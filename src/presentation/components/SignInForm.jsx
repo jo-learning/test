@@ -1,42 +1,43 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { authRepository } from "../../data/repositories/authRepository";
 import { signinUser } from "../../domain/useCases/signinUser";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-
 import UserContext from "../../shared/utils/UserContext";
+import { apiClient } from "../../data/services/apiClient";
 
 function SignInForm() {
-  const [email, setEmail] = useState("");
+  const [username, setUserName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
-  const navigate  = useNavigate()
-  const {user, LoggedInUser} = useContext(UserContext);
+  const navigate = useNavigate();
+  const { user, LoggedInUser, checkUser } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState("user");
 
-  const validateForm = () => {
-    const newErrors = {};
+  // const validateForm = () => {
+  //   const newErrors = {};
 
-    // Email validation
-    if (!email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email address is invalid";
-    }
+  //   // Email validation
+  //   if (!email) {
+  //     newErrors.email = "Email is required";
+  //   } else if (!/\S+@\S+\.\S+/.test(email)) {
+  //     newErrors.email = "Email address is invalid";
+  //   }
 
-    // Password validation
-    if (!password) {
-      newErrors.password = "Password is required";
-    } else if (password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
+  //   // Password validation
+  //   if (!password) {
+  //     newErrors.password = "Password is required";
+  //   } else if (password.length < 6) {
+  //     newErrors.password = "Password must be at least 6 characters";
+  //   }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  //   setErrors(newErrors);
+  //   return Object.keys(newErrors).length === 0;
+  // };
   const toggleMode = (newMode) => {
     setMode(newMode);
     setErrors({});
@@ -45,29 +46,70 @@ function SignInForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    if (validateForm()) {
-      
-      // Form is valid, proceed with the submission (e.g., API call)
-      console.log("Form submitted with:", { email, password });
-      const data = await signinUser({ email, password }, authRepository);
+    // if (validateForm()) {
+
+    // Form is valid, proceed with the submission (e.g., API call)
+
+    if (mode === "provider") {
+      const res = await apiClient.post("/api/restaurant/login", {
+        username,
+        password,
+      });
+      console.log(res.data);
+      if (res.data.success) {
+        LoggedInUser({ token: res.data.accessToken });
+        toast.success(res.data.message);
+        checkUser();
+        if (user == "user") {
+          
+          navigate("/dashboard");
+        } else {
+          navigate("/restaurantdashboard");
+        }
+      }
+    } else if (mode === "driver"){
+      const res = await apiClient.post("/api/driver/login", {
+        username,
+        password,
+      });
+      console.log(res.data);
+      if (res.data.success) {
+        LoggedInUser({ token: res.data.accessToken });
+        toast.success(res.data.message);
+        checkUser();
+        if (user == "user") {
+          navigate("/dashboard");
+        } else {
+          navigate("/readytable");
+        }
+      }
+    }
+     else {
+      console.log("Form submitted with:", { password, phoneNumber });
+      const data = await signinUser({ password, phoneNumber }, authRepository);
       // console.log(data);
       if (data.message) {
         console.log(data);
-        LoggedInUser({token: data.accessToken})
+        LoggedInUser({ token: data.accessToken });
         toast.success(data.message);
-        if (user == "user"){
-        navigate('/');}else{
-          navigate('/dashboard')
+        checkUser();
+        if (user == "user") {
+          
+          navigate("/dashboard");
+        } else {
+          navigate("/dashboard");
         }
       } else {
         toast.error(data.msg);
       }
-      // Reset form and errors
-      setEmail("");
-      setPassword("");
-      setErrors({});
-      setLoading(false);
     }
+
+    // Reset form and errors
+    setUserName("");
+    setPassword("");
+    setErrors({});
+    setLoading(false);
+    // }
   };
 
   return (
@@ -100,42 +142,39 @@ function SignInForm() {
       </div>
       <h2 className="text-2xl font-bold mb-4 text-center">Sign In</h2>
       <form onSubmit={handleSubmit}>
-        {
-          mode == "user" ? (
-            <div className="mb-3">
-          <input
-            type="number"
-            placeholder="Phone Number"
-            value={phoneNumber}
-            onChange={(e) => {
-              setPhoneNumber(e.target.value);
-              setErrors({});
-            }}
-            className="input-field mb-1 w-full p-2 border rounded-lg"
-          />
-          {/* {errors.email && (
+        {mode == "user" ? (
+          <div className="mb-3">
+            <input
+              type="number"
+              placeholder="Phone Number"
+              value={phoneNumber}
+              onChange={(e) => {
+                setPhoneNumber(e.target.value);
+                setErrors({});
+              }}
+              className="input-field mb-1 w-full p-2 border rounded-lg"
+            />
+            {/* {errors.email && (
             <p className="text-red-500 text-sm">{errors.email}</p>
           )} */}
-        </div>
-          ) : (
-            <div className="mb-3">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setErrors({});
-            }}
-            className="input-field mb-1 w-full p-2 border rounded-lg"
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm">{errors.email}</p>
-          )}
-        </div>
-          )
-        }
-        
+          </div>
+        ) : (
+          <div className="mb-3">
+            <input
+              type="username"
+              placeholder="User Name"
+              value={username}
+              onChange={(e) => {
+                setUserName(e.target.value);
+                setErrors({});
+              }}
+              className="input-field mb-1 w-full p-2 border rounded-lg"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email}</p>
+            )}
+          </div>
+        )}
 
         <div className="mb-3">
           <input
@@ -170,7 +209,7 @@ function SignInForm() {
           type="submit"
           className="w-full p-2 bg-brand-primary text-white dark:text-white rounded-lg"
         >
-          { loading ? "Loading..." :"Sign in"}
+          {loading ? "Loading..." : "Sign in"}
         </button>
         <p className="mt-4 text-center">
           Don’t have an account?{" "}

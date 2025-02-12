@@ -1,17 +1,20 @@
 import { useState } from "react";
 // import { CiCirclePlus } from 'react-icons/ci';
 import { NavLink } from "react-router-dom";
+import { apiClient } from "../../../data/services/apiClient";
 
 const DriverForm = () => {
   const [formData, setFormData] = useState({
     name: "",
-    gender: "",
+    sex: "",
     phoneNumber: "",
     username: "",
-    workingHours: [{ key: "", value: "" }],
+    // workingHours: [{ key: "", value: "" }],
     password: "",
-    confirmpassword: "",
+    // confirmpassword: "",
   });
+  const [confirmpassword, setConfirmPassword] = useState('')
+  const [image, setImage] = useState(null);
 
   const [previewUrl, setPreviewUrl] = useState(null); // Store the preview URL
 
@@ -19,7 +22,7 @@ const DriverForm = () => {
   const handleFileChange = (event) => {
     const file = event.target.files[0]; // Get the selected file
     if (file) {
-      // setImage(file);
+      setImage(file);
 
       // Generate a preview URL
       const reader = new FileReader();
@@ -48,9 +51,38 @@ const DriverForm = () => {
   //     setFormData(newData);
   //   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     console.log(formData);
+
+    const formData1 = new FormData();
+    formData1.append("profilePicture", image);
+    formData1.append("name", formData.name);
+    formData1.append("password", formData.password);
+    formData1.append("phoneNumber", formData.phoneNumber);
+    formData1.append("sex", formData.sex);
+    formData1.append("username", formData.username);
+    
+
+
+    const response = await apiClient.post("/api/driver/addDriver", formData1, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    
+    // const response = await apiClient.post("/api/driver/addDriver", {formData, file:{path: "abc/abv"}})
+    console.log(response);
+    if (response.data.data.sucess == true){
+      setFormData({
+        name: "",
+        sex: "",
+        phoneNumber: "",
+        username: "",
+        password: "",
+      })
+    }
+    
   };
 
   return (
@@ -81,9 +113,9 @@ const DriverForm = () => {
           <div>
             <label className="block text-sm font-medium">Gender</label>
             <select
-              name="gender"
-              value={formData.gender}
-              onChange={(e) => handleChange(e, "gender")}
+              name="sex"
+              value={formData.sex}
+              onChange={(e) => handleChange(e, "sex")}
               className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
             >
               <option value="" disabled>
@@ -97,7 +129,7 @@ const DriverForm = () => {
           <div>
             <label className="block text-sm font-medium">Phone Number</label>
             <input
-              type="text"
+              type="number"
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={(e) => handleChange(e, "phoneNumber")}
@@ -127,7 +159,6 @@ const DriverForm = () => {
               type="file"
               name="image"
               onChange={(e) => {
-                handleChange(e, "image");
                 handleFileChange(e);
               }}
               className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
@@ -162,26 +193,27 @@ const DriverForm = () => {
             <input
               type="password"
               name="confirmpassword"
-              value={formData.confirmpassword}
-              onChange={(e) => handleChange(e, "confirmpassword")}
+              value={confirmpassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
             />
           </div>
-
-          {/* Repeat similar blocks for Phone, Ambiance, Website, Social Media, Cuisine Type, Address */}
-
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium">
-              Current Location
+              address
             </label>
             <input
               type="text"
-              name="currentlocation"
-              value={formData.currentlocation}
-              onChange={(e) => handleChange(e, "currentlocation")}
+              name="address"
+              value={address}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
             />
-          </div>
+          </div> */}
+
+          {/* Repeat similar blocks for Phone, Ambiance, Website, Social Media, Cuisine Type, Address */}
+
+          
 
           <button
             type="submit"

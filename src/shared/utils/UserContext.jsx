@@ -1,35 +1,161 @@
+// eslint-disable-next-line no-unused-vars
 import React, { createContext, useState, useEffect } from "react";
-import { json } from "react-router-dom";
+// import { apiClient } from "../../data/services/apiClient";
+// import apiClient from "../../data/services/apiClient"
 
 const UserContext = createContext();
 
+const apiURL = "https://zoskalus-backend-prisma-postresql.onrender.com/"
+// const apiURL = "http://localhost:3010/";
+
+// eslint-disable-next-line react/prop-types
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-  useEffect(()=>{
-    const localuser = JSON.parse(localStorage.getItem("user"))
-    if (localuser){
-        setUser(localuser);
+  useEffect(() => {
+    const localuser = JSON.parse(localStorage.getItem("user"));
+    if (localuser) {
+      setUser(localuser);
     }
-    },[])
+  }, []);
+
+  const checkUser = async () => {
+    try{
+    // const response = await fetch("http://localhost:3010/api/user/verifyRole", {
+    //   credentials: "include",
+    // });
+
+    const response = await fetch(`${apiURL}api/user/verifyRole`, {
+      headers: {'Content-Type': 'application/json'},
+      method: 'GET',
+      credentials: "include",
+    });
+
+    const data = await response.json();
+    // const data = await apiClient.get('/api/user/verifyRole')
+    // console.log(data.data);
+
+    if (data.data == "user") {
+      setIsAuthenticated(true);
+      return true;
+    } else {
+      setIsAuthenticated(false);
+      return false;
+    }}
+    catch(e){
+      console.log(e)
+      return false;
+    }
+  };
+
+  const checkInNavBar = async () => {
+    try{
+    // const response = await fetch(`${apiURL}api/user/verifyRole`, {
+    //   credentials: "include",
+    // });
+
+    // const data = await apiClient.get('/api/user/verifyRole')
+    // console.log(data)
+
+    // const response = await apiClient.get('/')
+    console.log("being")
+    const response = await fetch(`${apiURL}api/user/verifyRole`, {
+      headers: {'Content-Type': 'application/json'},
+      method: 'GET',
+      credentials: "include",
+    });
+    const data = await response.json();
+    // console.log(data.data);
+
+    if (data.data == "user") {
+      setIsAuthenticated(true);
+      return true;
+    }else if(data.data == "driver"){
+      return true;
+    }else if (data.data == "restaurant"){
+      return true;
+    } else {
+      setIsAuthenticated(false);
+      return false;
+    }}
+    catch(e){
+      console.log(e)
+      return false;
+    }
+  };
+
+  const checkDriver = async () => {
+    const response = await fetch("http://localhost:3010/api/user/verifyRole", {
+      headers: {'Content-Type': 'application/json'},
+      method: 'GET',
+      credentials: "include",
+    });
+    const data = await response.json();
+    // console.log(data.data)
+
+    if (data.data == "driver") {
+      // setIsAuthenticated(true);
+      return true;
+    } else {
+      // setIsAuthenticated(false);
+      return false;
+    }
+  };
+
+  const checkRestaurant = async () => {
+    const response = await fetch("http://localhost:3010/api/user/verifyRole", {
+      headers: {'Content-Type': 'application/json'},
+      method: 'GET',
+      credentials: "include",
+    });
+    const data = await response.json();
+    // console.log(data.data)
+
+    if (data.data == "restaurant") {
+      // setIsAuthenticated(true);
+      return true;
+    } else {
+      // setIsAuthenticated(false);
+      return false;
+    }
+  };
 
 
-  const LoggedInUser = ({token}) => {
+  const checkAdmin = async () => {
+    const response = await fetch("http://localhost:3010/api/user/verifyRole", {
+      headers: {'Content-Type': 'application/json'},
+      method: 'GET',
+      credentials: "include",
+    });
+    const data = await response.json();
+    // console.log(data.data)
+
+    if (data.data == "admin") {
+      // setIsAuthenticated(true);
+      return true;
+    } else {
+      // setIsAuthenticated(false);
+      return false;
+    }
+  };
+
+  const LoggedInUser = async ({ token }) => {
     // const newTheme = theme === "light" ? "dark" : "light";
     // setTheme(newTheme);
 
     const decodedPayload = decodeJWT(token);
-    console.log(decodedPayload.aud);
-    setUser(decodedPayload.aud)
+    // console.log(decodedPayload.aud);
+    setUser(decodedPayload.aud);
     localStorage.setItem("user", JSON.stringify(decodedPayload.aud));
     // document.documentElement.classList.remove(theme);
     // document.documentElement.classList.add(newTheme);
   };
 
   const LoggedOutUser = () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
     setUser([]);
-  }
+  };
 
   function decodeJWT(token) {
     try {
@@ -43,7 +169,19 @@ export const UserProvider = ({ children }) => {
   }
 
   return (
-    <UserContext.Provider value={{ user, LoggedInUser, LoggedOutUser }}>
+    <UserContext.Provider
+      value={{
+        isAuthenticated,
+        checkUser,
+        checkAdmin,
+        checkDriver,
+        checkRestaurant,
+        user,
+        LoggedInUser,
+        LoggedOutUser,
+        checkInNavBar
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

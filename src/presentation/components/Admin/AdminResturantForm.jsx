@@ -1,44 +1,49 @@
 import { useState } from "react";
-import { CiCirclePlus } from "react-icons/ci";
+// import { CiCirclePlus } from "react-icons/ci";
 import { FaMinusCircle, FaPlusCircle } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+import { apiClient } from "../../../data/services/apiClient";
+import { toast } from "react-toastify";
 
 const ResturantForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    image: "",
+    // image: "",
     username: "",
     password: "",
     workingHours: [{ key: "", value: "" }],
-    emails: [{ key: "", value: "" }],
-    phones: [{ key: "", value: "" }],
-    ambiance: [{ key: "", value: "" }],
-    websites: [{ key: "", value: "" }],
+    email: [{ key: "", value: "" }],
+    phoneNumber: [{ key: "", value: "" }],
+    // ambiance: [{ key: "", value: "" }],
+    website: [{ key: "", value: "" }],
     socialMedia: [{ key: "", value: "" }],
     cuisineType: [{ key: "", value: "" }],
     address: [{ key: "", value: "" }],
-    geolocation: [{ lat: "", long: "" }],
+    geoLocation: [{ lat: "", long: "" }],
   });
 
   const [last, setLast] = useState({
     workingHours: 0,
-    emails: 0,
-    phones: 0,
-    ambiance: 0,
-    websites: 0,
+    email: 0,
+    phoneNumber: 0,
+    // ambiance: 0,
+    website: 0,
     socialMedia: 0,
     cuisineType: 0,
     address: 0,
   });
 
+  const [loading, setLoading] = useState(false)
+
   const [previewUrl, setPreviewUrl] = useState(null); // Store the preview URL
+  const [image, setImage] = useState(null);
 
   // Handle file input change
   const handleFileChange = (event) => {
     const file = event.target.files[0]; // Get the selected file
     if (file) {
-      // setImage(file);
+      setImage(file);
 
       // Generate a preview URL
       const reader = new FileReader();
@@ -52,12 +57,22 @@ const ResturantForm = () => {
 
   const handleChange = (e, field, index = null) => {
     const { name, value } = e.target;
+    console.log(`${name} - ${value} - ${field}`)
     if (index !== null) {
-      const updatedField = [...formData[field]];
-      updatedField[index][name] = value;
+      let updatedField = [...formData[field]];
+      if (name == "value"){
+        updatedField[index].value = value;
+      }else{
+        updatedField[index].key = value;
+      }
+      
+      
       setFormData({ ...formData, [field]: updatedField });
     } else {
-      setFormData({ ...formData, [name]: value });
+    
+        setFormData({ ...formData, [name]: value });
+     
+      
     }
   };
 
@@ -82,9 +97,64 @@ const ResturantForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    console.log(formData);
+    setLoading(true);
+    // console.log(formData);
+    const formData1 = new FormData();
+    formData1.append("ambiance", image);
+    formData1.append("name", formData.name);
+    formData1.append("description", formData.description);
+    formData1.append("phoneNumber[]", JSON.stringify(formData.phoneNumber));
+    // formData.phoneNumber.forEach((phone, index) => {
+    //   formData1.append(`phoneNumber[${index}]`, phone); // Serialize the object to a string
+    // });
+    formData1.append("workingHours", formData.workingHours);
+    formData1.append("email[]", JSON.stringify(formData.email));
+    formData1.append("website[]", JSON.stringify(formData.website));
+    formData1.append("socialMedia[]", JSON.stringify(formData.socialMedia));
+    formData1.append("address", formData.address);
+    formData1.append("geoLocation[]", JSON.stringify(formData.geoLocation));
+    formData1.append("cuisineType[]", JSON.stringify(formData.cuisineType));
+    formData1.append("username", formData.username);
+    formData1.append("password", formData.password);
+    
+    try{
+      const response = await apiClient.post("/api/restaurant/addRestaurant", formData1, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log(response.data)
+      if (response.data.succuss){
+        toast.success(response.data.msg)
+        setFormData({
+          name: "",
+          description: "",
+          // image: "",
+          username: "",
+          password: "",
+          workingHours: [{ key: "", value: "" }],
+          email: [{ key: "", value: "" }],
+          phoneNumber: [{ key: "", value: "" }],
+          // ambiance: [{ key: "", value: "" }],
+          website: [{ key: "", value: "" }],
+          socialMedia: [{ key: "", value: "" }],
+          cuisineType: [{ key: "", value: "" }],
+          address: [{ key: "", value: "" }],
+          geoLocation: [{ lat: "", long: "" }],
+        })
+      }else{
+        toast.error(response.data.msg)
+      }
+    }catch(e){
+        toast.error(e.response.data.msg)
+    }finally{
+      setLoading(false)
+    }
+
+   
+    
   };
 
   return (
@@ -98,6 +168,7 @@ const ResturantForm = () => {
         </NavLink>
       </div>
       <form
+        // encType="multipart/formdata"
         onSubmit={handleSubmit}
         className="flex justify-between text-black dark:text-gray-400 space-y-4 space-x-4  max-w-full mx-auto p-6 border rounded-lg shadow-lg"
       >
@@ -141,7 +212,7 @@ const ResturantForm = () => {
             </p>
             <input
               type="file"
-              name="image"
+              name="ambiance"
               onChange={(e) => {
                 handleChange(e, "image");
                 handleFileChange(e);
@@ -218,15 +289,15 @@ const ResturantForm = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Emails</label>
-            {formData.emails.map((item, index) => (
+            <label className="block text-sm font-medium">email</label>
+            {formData.email.map((item, index) => (
               <div key={index} className="flex space-x-2">
                 <input
                   type="text"
                   name="key"
                   placeholder="Key"
                   value={item.key}
-                  onChange={(e) => handleChange(e, "emails", index)}
+                  onChange={(e) => handleChange(e, "email", index)}
                   className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
                 />
                 <input
@@ -234,14 +305,14 @@ const ResturantForm = () => {
                   name="value"
                   placeholder="Value"
                   value={item.value}
-                  onChange={(e) => handleChange(e, "emails", index)}
+                  onChange={(e) => handleChange(e, "email", index)}
                   className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
                 />
-                {last["emails"] == index ? (
+                {last["email"] == index ? (
                   <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
                     <button
                       type="button"
-                      onClick={() => handleAddInput("emails", index)}
+                      onClick={() => handleAddInput("email", index)}
                       className=" bg-green-500 text-white font-bold m-0 p-0"
                     >
                       <FaPlusCircle size={28} />
@@ -251,7 +322,7 @@ const ResturantForm = () => {
                   <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
                     <button
                       type="button"
-                      onClick={() => handleDeleteInput("emails", index)}
+                      onClick={() => handleDeleteInput("email", index)}
                       className=" bg-red-500 text-white font-bold m-0 p-0"
                     >
                       <FaMinusCircle size={28} />
@@ -264,14 +335,14 @@ const ResturantForm = () => {
 
           <div>
             <label className="block text-sm font-medium">Phone Number</label>
-            {formData.phones.map((item, index) => (
+            {formData.phoneNumber.map((item, index) => (
               <div key={index} className="flex space-x-2">
                 <input
                   type="text"
                   name="key"
                   placeholder="Key"
                   value={item.key}
-                  onChange={(e) => handleChange(e, "phones", index)}
+                  onChange={(e) => handleChange(e, "phoneNumber", index)}
                   className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
                 />
                 <input
@@ -279,14 +350,14 @@ const ResturantForm = () => {
                   name="value"
                   placeholder="Value"
                   value={item.value}
-                  onChange={(e) => handleChange(e, "phones", index)}
+                  onChange={(e) => handleChange(e, "phoneNumber", index)}
                   className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
                 />
-                {last["phones"] == index ? (
+                {last["phoneNumber"] == index ? (
                   <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
                     <button
                       type="button"
-                      onClick={() => handleAddInput("phones", index)}
+                      onClick={() => handleAddInput("phoneNumber", index)}
                       className=" bg-green-500 text-white font-bold m-0 p-0"
                     >
                       <FaPlusCircle size={28} />
@@ -296,7 +367,7 @@ const ResturantForm = () => {
                   <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
                     <button
                       type="button"
-                      onClick={() => handleDeleteInput("phones", index)}
+                      onClick={() => handleDeleteInput("phoneNumber", index)}
                       className=" bg-red-500 text-white font-bold m-0 p-0"
                     >
                       <FaMinusCircle size={28} />
@@ -307,8 +378,8 @@ const ResturantForm = () => {
             ))}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium">Ambiance</label>
+          {/* <div>
+            <label className="block text-sm font-medium">Ambiance</label> */}
             {/* {formData.ambiance.map((item, index) => (
               <div key={index} className="flex space-x-2">
                 <input
@@ -350,33 +421,33 @@ const ResturantForm = () => {
                 )}
               </div>
             ))} */}
-            <input type="file"></input>
-          </div>
+            {/* <input type="file"></input>
+          </div> */}
           <div>
-            <label className="block text-sm font-medium">Websites</label>
-            {formData.websites.map((item, index) => (
+            <label className="block text-sm font-medium">website</label>
+            {formData.website.map((item, index) => (
               <div key={index} className="flex space-x-2">
                 <input
                   type="text"
                   name="key"
                   placeholder="Key"
                   value={item.key}
-                  onChange={(e) => handleChange(e, "websites", index)}
+                  onChange={(e) => handleChange(e, "website", index)}
                   className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
                 />
                 <input
-                  type="websites"
+                  type="website"
                   name="value"
                   placeholder="Value"
                   value={item.value}
-                  onChange={(e) => handleChange(e, "websites", index)}
+                  onChange={(e) => handleChange(e, "website", index)}
                   className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
                 />
-                {last["websites"] == index ? (
+                {last["website"] == index ? (
                   <div className="h-[50px] w-[50px] bg-green-500 items-center justify-center flex rounded-full mt-2">
                     <button
                       type="button"
-                      onClick={() => handleAddInput("websites", index)}
+                      onClick={() => handleAddInput("website", index)}
                       className=" bg-green-500 text-white font-bold m-0 p-0"
                     >
                       <FaPlusCircle size={28} />
@@ -386,7 +457,7 @@ const ResturantForm = () => {
                   <div className="h-[50px] w-[50px] bg-red-500 items-center justify-center flex rounded-full mt-2">
                     <button
                       type="button"
-                      onClick={() => handleDeleteInput("websites", index)}
+                      onClick={() => handleDeleteInput("website", index)}
                       className=" bg-red-500 text-white font-bold m-0 p-0"
                     >
                       <FaMinusCircle size={28} />
@@ -489,15 +560,15 @@ const ResturantForm = () => {
           {/* Repeat similar blocks for Phone, Ambiance, Website, Social Media, Cuisine Type, Address */}
 
           <div>
-            <label className="block text-sm font-medium">Geolocation</label>
-            {formData.geolocation.map((item, index) => (
+            <label className="block text-sm font-medium">Geo Location</label>
+            {formData.geoLocation.map((item, index) => (
               <div key={index} className="flex space-x-2">
                 <input
                   type="text"
                   name="lat"
                   placeholder="lat"
                   value={item.key}
-                  onChange={(e) => handleChange(e, "geolocation", index)}
+                  onChange={(e) => handleChange(e, "geoLocation", index)}
                   className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
                 />
                 <input
@@ -505,7 +576,7 @@ const ResturantForm = () => {
                   name="long"
                   placeholder="long"
                   value={item.value}
-                  onChange={(e) => handleChange(e, "geolocation", index)}
+                  onChange={(e) => handleChange(e, "geoLocation", index)}
                   className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
                 />
                 {last["cuisineType"] == index ? (
@@ -536,8 +607,9 @@ const ResturantForm = () => {
           <button
             type="submit"
             className="w-full mt-4 py-3 bg-blue-500 text-white rounded-lg"
+            disabled={loading}
           >
-            Submit
+            {loading ? 'loading...' :'Submit'}
           </button>
         </div>
       </form>

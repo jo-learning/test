@@ -13,20 +13,20 @@ export const ProductProvider = ({ children }) => {
     // setFormData(initialData);
   }, []);
 
-  const addData = (data) => {
+  const addData = (data, restaurantId = 'e7265202-7ced-4d7e-9f03-4b15b11ff884') => {
     if (formData.length > 0) {
       const check = formData.some((obj) => obj.id != data.id)
       if (check) {
         setFormData((prevData) =>{
-          localStorage.setItem("tableData", JSON.stringify([...prevData, { id: data.id, item: data.name, price: data.price, quantity: 1 } ]));
-          return [...prevData, { id: data.id, item:data.name, price: data.price, quantity: 1 }]
+          localStorage.setItem("tableData", JSON.stringify([...prevData, {foodId: data.id ,restaurantId , id: data.id, item: data.name, price: data.price, quantity: 1 } ]));
+          return [...prevData, { foodId: data.id, restaurantId , id: data.id, item:data.name, price: data.price, quantity: 1 }]
         }
         );
         
       }
     } else {
-      setFormData([{ id: data.id,item: data.name, price: data.price, quantity: 1 }]);
-      localStorage.setItem("tableData", JSON.stringify([{ id: data.id, item:data.name, price: data.price, quantity: 1 }]));
+      setFormData([{foodId: data.id ,restaurantId , id: data.id,item: data.name, price: data.price, quantity: 1 }]);
+      localStorage.setItem("tableData", JSON.stringify([{foodId: data.id ,restaurantId , id: data.id, item:data.name, price: data.price, quantity: 1 }]));
     }
     // console.log(data)
   };

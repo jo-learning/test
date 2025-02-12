@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function RestaurantFoodTable() {
+export default function OrdersTable() {
   const allUsers = [
     {
       id: "USR001",

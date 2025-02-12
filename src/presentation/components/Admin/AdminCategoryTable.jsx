@@ -3,54 +3,15 @@ import { CiCirclePlus } from "react-icons/ci";
 import DownloadCSVorPDF from "../lib/download";
 import RecordsPerPage from "../lib/recordsPerPage";
 
+import { categoryRepository } from "../../../data/repositories/categoryRepository";
+import { getCategoryData, createCategoryData } from "../../../domain/useCases/getCategoryData";
+import { toast } from "react-toastify";
+import { apiClient } from "../../../data/services/apiClient";
+import useDebounce from "../lib/debounceSearch";
+
 export default function AdminCategoryTable() {
-  const allUsers = [
-    {
-      id: "USR001",
-      categoryName: "Fasting",
-      items: 0,
-      fullName: "John Doe",
-      email: "john.doe@example.com",
-      phone: "123-456-7890",
-      address: "123 Elm Street, Springfield",
-    },
-    {
-      id: "USR002",
-      categoryName: "Non Fasting",
-      items: 0,
-      fullName: "Jane Smith",
-      email: "jane.smith@example.com",
-      phone: "987-654-3210",
-      address: "456 Oak Avenue, Metropolis",
-    },
-    {
-      id: "USR003",
-      categoryName: "Drinks",
-      items: 0,
-      fullName: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      phone: "555-123-4567",
-      address: "789 Pine Road, Gotham",
-    },
-    {
-      id: "USR004",
-      categoryName: "Food",
-      items: 0,
-      fullName: "Bob Brown",
-      email: "bob.brown@example.com",
-      phone: "555-987-6543",
-      address: "321 Cedar Lane, Star City",
-    },
-    {
-      id: "USR005",
-      categoryName: "Burger",
-      items: 0,
-      fullName: "Cathy White",
-      email: "cathy.white@example.com",
-      phone: "444-555-6666",
-      address: "654 Maple Boulevard, Central City",
-    },
-  ];
+  const [loading, setLoading] = useState(false);
+  const [allUsers, setAllUsers] =useState( [])
 
   const [users, setUsers] = useState(allUsers);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -89,6 +50,18 @@ export default function AdminCategoryTable() {
       setCategory(e.target.value)
       console.log(category);
   }
+  const handleSubmit = async() => {
+    setLoading(true)
+    const data = await createCategoryData({name: category}, categoryRepository);
+    console.log(data, category)
+    setLoading(false)
+    if (data.success){
+    setSortedUsers([...sortedUsers, data.data])
+    setAddCategory(false)
+    toast.success(data.msg)}else{
+      toast.error("try again")
+    }
+  } 
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -100,14 +73,40 @@ export default function AdminCategoryTable() {
   };
 
   const [searchTerm, setSearchTerm] = useState("");
+
+
+  const debouncedSearchQuery = useDebounce(searchTerm, 500); // 500ms debounce delay
+
+  useEffect(() => {
+    if (debouncedSearchQuery) {
+      // Perform the search API call or logic here
+      console.log('Searching for:', debouncedSearchQuery);
+
+      const handleSearch = async() => {
+        setCurrentPage(1); // Reset to the first page on a new search
+    const response = await apiClient.get(`/api/category/fetchCategories?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc&search=${debouncedSearchQuery}`)
+    console.log(response)
+    let user = response.data.data;
+    setSortedUsers(user);
+    // setTotalPages(response.data.pagination.total)
+      }
+      handleSearch()
+
+
+
+
+    }
+  }, [debouncedSearchQuery]);
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(3)
   // const itemsPerPage = 3;
 
   const filteredUsers = allUsers.filter(
     (user) =>
-      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) 
+      // user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -149,7 +148,6 @@ export default function AdminCategoryTable() {
   const csvHeaders = [
     { label: "ID", key: "id" },
     { label: "Category Name", key: "categoryName" },
-    { label: "Items", key: "items" },
   ];
 
 
@@ -159,17 +157,45 @@ export default function AdminCategoryTable() {
     //   (currentPage - 1) * itemsPerPage,
     //   currentPage * itemsPerPage
     // ))
-    const direction =
-      sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
-    setSortColumn(column);
-    setSortDirection(direction);
-    const sortedData = [...displayedUsers].sort((a, b) => {
-      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
-      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
-      return 0;
-    });
+    // let datas = []
+    const handleCategory = async() => {
+      const data = await getCategoryData(categoryRepository)
+      if (data.success == true) 
+        setAllUsers(data.data)
+      const filteredUsers = data.data.filter(
+        (user) =>
+          user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      // return filteredUsers
 
-    setSortedUsers(sortedData);
+      const displayedUsers = filteredUsers.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+      );
+      const direction =
+        sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
+      setSortColumn(column);
+      setSortDirection(direction);
+      const sortedData = [...displayedUsers].sort((a, b) => {
+        if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
+        if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
+        return 0;
+      });
+
+  
+      setSortedUsers(sortedData);
+      
+      
+    } ;
+    handleCategory()
+
+    // console.log(datas)
+    
+  
+    // const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    
+    
 
   },[currentPage, searchTerm, itemsPerPage])
 
@@ -181,7 +207,7 @@ export default function AdminCategoryTable() {
         Category
       </h1>
 
-      <DownloadCSVorPDF sortedUsers={sortedUsers} csvHeaders={csvHeaders} tableName={"Restaurant Table"} />
+      
 
       {/* Search Bar and Add Restaurant Button */}
       <div className="mb-4 flex justify-between items-center">
@@ -192,10 +218,11 @@ export default function AdminCategoryTable() {
           onChange={handleSearchChange}
           className="w-full px-4 py-2 text-gray-800 bg-white border rounded-md dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 mr-4"
         />
+        <DownloadCSVorPDF sortedUsers={sortedUsers} csvHeaders={csvHeaders} tableName={"Restaurant Table"} />
         <div className="flex justify-end mb-2">
       <button 
       onClick={()=>{setAddCategory(true)}}
-      className="px-4 py-2 whitespace-nowrap  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
+      className="px-4 py-2 mt-2 whitespace-nowrap  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
         <CiCirclePlus size={28}/>
           Add Category
         </button></div>
@@ -242,10 +269,7 @@ export default function AdminCategoryTable() {
                   {user.id}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.categoryName}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.items}
+                  {user.name}
                 </td>
                 <td className="px-4 py-3">
                   <button 
@@ -371,10 +395,11 @@ export default function AdminCategoryTable() {
                 Cancel
               </button>
               <button
-                onClick={handleDelete}
+                onClick={handleSubmit}
                 className="ml-2 px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
+                disabled={loading}
               >
-                Add Category
+                {loading ? "loading ..." : "Add Category"}
               </button>
             </div>
           </div>
@@ -383,71 +408,236 @@ export default function AdminCategoryTable() {
 
       {/* Edit Modal */}
       {isEditModalOpen && editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div
-            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
-            onClick={(e) => e.stopPropagation()}
+        <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+        onClick={()=> setIsEditModalOpen(false)} // Close the modal when clicking outside
+      >
+        {/* Modal Content */}
+        <div
+          className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
+          onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
+        >
+          <label>Category Name</label>
+          <input
+          type="text"
+          value={editingUser.name}
+          className="w-full text-black px-4 py-2 mt-2 border rounded-lg bg-white"
+          onChange={(e)=> setEditingUser({...editingUser, name: e.target.value})}
           >
-            <h2 className="text-lg font-semibold text-white">Edit Food</h2>
-            <div className="mt-4">
-              <input
-                type="text"
-                name="foodName"
-                value={editingUser.foodName}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Food Name"
-              />
-              <input
-                type="text"
-                name="restaurantName"
-                value={editingUser.restaurantName}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Restaurant Name"
-              />
-              <input
-                type="text"
-                name="category"
-                value={editingUser.category}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Category"
-              />
-              <input
-                type="text"
-                name="price"
-                value={editingUser.price}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Price"
-              />
-              <input
-                type="text"
-                name="phone"
-                value={editingUser.phone}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Phone"
-              />
-            </div>
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={handleEditCancel}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleEditSave}
-                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-              >
-                Save
-              </button>
-            </div>
+          </input>
+          <div className="flex justify-between mt-4">
+            <button
+              onClick={()=> setIsEditModalOpen(false)}
+              className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="ml-2 px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
+              disabled={loading}
+            >
+              {loading ? "loading ..." : "Add Category"}
+            </button>
           </div>
         </div>
+      </div>
       )}
     </div>
   );
 }
+
+
+
+
+
+
+// import { useState, useEffect } from "react";
+// import { CiCirclePlus } from "react-icons/ci";
+// import DownloadCSVorPDF from "../lib/download";
+// import RecordsPerPage from "../lib/recordsPerPage";
+
+// export default function AdminCategoryTable() {
+//   const [loading, setLoading] = useState(false);
+//   const [categories, setCategories] = useState([]);
+//   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+//   const [editingCategory, setEditingCategory] = useState(null);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const [itemsPerPage, setItemsPerPage] = useState(3);
+//   const [sortColumn, setSortColumn] = useState("id");
+//   const [sortDirection, setSortDirection] = useState("asc");
+//   const [totalPages, setTotalPages] = useState(0);
+
+//   const fetchCategories = async () => {
+//     setLoading(true);
+//     try {
+//       const response = await fetch(
+//         `http://localhost:3010/api/driver/fetchDrivers?page=${currentPage}&limit=${itemsPerPage}&sortBy=${sortColumn}&sortOrder=${sortDirection}&search=${searchTerm}`
+//         // `http://localhost:3010/api/category/fetchCategories?page=${currentPage}&limit=${itemsPerPage}&sortBy=${sortColumn}&sortOrder=${sortDirection}&search=${searchTerm}`
+//       );
+//       const data = await response.json();
+//       setCategories(data.items || []);
+//       setTotalPages(data.totalPages || 0);
+//     } catch (error) {
+//       console.error("Failed to fetch categories:", error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchCategories();
+//   }, [currentPage, itemsPerPage, sortColumn, sortDirection, searchTerm]);
+
+//   const handleSort = (column) => {
+//     const direction = sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
+//     setSortColumn(column);
+//     setSortDirection(direction);
+//   };
+
+//   const handleSearchChange = (e) => {
+//     setSearchTerm(e.target.value);
+//     setCurrentPage(1); // Reset to first page on new search
+//   };
+
+//   const handleEditClick = (category) => {
+//     setEditingCategory(category);
+//     setIsEditModalOpen(true);
+//   };
+
+//   const handleEditChange = (e) => {
+//     const { name, value } = e.target;
+//     setEditingCategory((prev) => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleEditSave = () => {
+//     setCategories((prevCategories) =>
+//       prevCategories.map((cat) =>
+//         cat.id === editingCategory.id ? editingCategory : cat
+//       )
+//     );
+//     setIsEditModalOpen(false);
+//   };
+
+//   const handleEditCancel = () => {
+//     setEditingCategory(null);
+//     setIsEditModalOpen(false);
+//   };
+
+//   const csvHeaders = [
+//     { label: "ID", key: "id" },
+//     { label: "Category Name", key: "name" },
+//   ];
+
+//   return (
+//     <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
+//       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">Category</h1>
+
+//       {/* Search Bar and Add Category Button */}
+//       <div className="mb-4 flex justify-between items-center">
+//         <input
+//           type="text"
+//           placeholder="Search by name..."
+//           value={searchTerm}
+//           onChange={handleSearchChange}
+//           className="w-full px-4 py-2 text-gray-800 bg-white border rounded-md dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 mr-4"
+//         />
+//         <DownloadCSVorPDF
+//           sortedUsers={categories}
+//           csvHeaders={csvHeaders}
+//           tableName={"Category Table"}
+//         />
+//         <button
+//           onClick={() => alert("Add Category")}
+//           className="px-4 py-2 mt-2 whitespace-nowrap flex justify-center text-center items-center text-sm text-white bg-blue-600 rounded hover:bg-green-700"
+//         >
+//           <CiCirclePlus size={28} />
+//           Add Category
+//         </button>
+//       </div>
+
+//       {/* Categories Table */}
+//       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
+//         <table className="min-w-full text-left">
+//           <thead className="bg-gray-200 dark:bg-gray-700">
+//             <tr>
+//               {csvHeaders.map((column) => (
+//                 <th
+//                   key={column.key}
+//                   className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+//                   onClick={() => handleSort(column.key)}
+//                 >
+//                   <div className="flex items-center">
+//                     {column.label}
+//                     {sortColumn === column.key && (
+//                       <span className="ml-2">{sortDirection === "asc" ? "↑" : "↓"}</span>
+//                     )}
+//                   </div>
+//                 </th>
+//               ))}
+//               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">Action</th>
+//             </tr>
+//           </thead>
+//           <tbody>
+//             {categories.map((category, index) => (
+//               <tr
+//                 key={index}
+//                 className={`${
+//                   index % 2 === 0 ? "bg-gray-100 dark:bg-gray-900" : "bg-gray-50 dark:bg-gray-800"
+//                 }`}
+//               >
+//                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">{category.id}</td>
+//                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">{category.name}</td>
+//                 <td className="px-4 py-3">
+//                   <button
+//                     onClick={() => handleEditClick(category)}
+//                     className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+//                   >
+//                     Edit
+//                   </button>
+//                   <button
+//                     onClick={() => alert("Delete Category")}
+//                     className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
+//                   >
+//                     Delete
+//                   </button>
+//                 </td>
+//               </tr>
+//             ))}
+//           </tbody>
+//         </table>
+//       </div>
+
+//       {/* Pagination */}
+//       <div className="flex items-center justify-between mt-4">
+//         <button
+//           disabled={currentPage === 1}
+//           onClick={() => setCurrentPage(currentPage - 1)}
+//           className={`px-3 py-1 text-sm ${
+//             currentPage === 1
+//               ? "text-gray-400 bg-gray-200 cursor-not-allowed"
+//               : "text-white bg-blue-600 hover:bg-blue-700"
+//           } rounded`}
+//         >
+//           &lt;
+//         </button>
+//         <span className="mx-2 text-gray-800 dark:text-gray-300">
+//           {currentPage} / {totalPages}
+//         </span>
+//         <button
+//           disabled={currentPage === totalPages}
+//           onClick={() => setCurrentPage(currentPage + 1)}
+//           className={`px-3 py-1 text-sm ${
+//             currentPage === totalPages
+//               ? "text-gray-400 bg-gray-200 cursor-not-allowed"
+//               : "text-white bg-blue-600 hover:bg-blue-700"
+//           } rounded`}
+//         >
+//           &gt;
+//         </button>
+//         <RecordsPerPage setItemsPerPage={setItemsPerPage} />
+//       </div>
+//     </div>
+//   );
+// }

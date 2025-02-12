@@ -3,73 +3,42 @@ import { CiCirclePlus } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
 import DownloadCSVorPDF from "../lib/download";
 import RecordsPerPage from "../lib/recordsPerPage";
+import { apiClient } from "../../../data/services/apiClient";
+import useDebounce from "../lib/debounceSearch";
 
 export default function AdminVehicelTable() {
   const allUsers = [
-    {
-      id: "USR001",
-      fullName: "John Doe",
-      email: "john.doe@example.com",
-      phone: "123-456-7890",
-      address: "123 Elm Street, Springfield",
-    },
-    {
-      id: "USR002",
-      fullName: "Jane Smith",
-      email: "jane.smith@example.com",
-      phone: "987-654-3210",
-      address: "456 Oak Avenue, Metropolis",
-    },
-    {
-      id: "USR003",
-      fullName: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      phone: "555-123-4567",
-      address: "789 Pine Road, Gotham",
-    },
-    {
-      id: "USR004",
-      fullName: "Bob Brown",
-      email: "bob.brown@example.com",
-      phone: "555-987-6543",
-      address: "321 Cedar Lane, Star City",
-    },
-    {
-      id: "USR005",
-      fullName: "Cathy White",
-      email: "cathy.white@example.com",
-      phone: "444-555-6666",
-      address: "654 Maple Boulevard, Central City",
-    },
   ];
 
 
-  const [users, setUsers] = useState(allUsers);
+  // const [users, setUsers] = useState(allUsers);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [drivers, setDrivers] = useState([])
   
 
   const handleEditClick = (user) => {
+    console.log(user)
     setEditingUser(user);
     setIsEditModalOpen(true);
   };
 
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditingUser((prev) => ({ ...prev, [name]: value }));
-  };
+  // const handleEditChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setEditingUser((prev) => ({ ...prev, [name]: value }));
+  // };
 
-  const handleEditSave = () => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === editingUser.id ? editingUser : user))
-    );
-    setIsEditModalOpen(false);
-  };
+  // const handleEditSave = () => {
+  //   setUsers((prevUsers) =>
+  //     prevUsers.map((user) => (user.id === editingUser.id ? editingUser : user))
+  //   );
+  //   setIsEditModalOpen(false);
+  // };
 
-  const handleEditCancel = () => {
-    setEditingUser(null);
-    setIsEditModalOpen(false);
-  };
+  // const handleEditCancel = () => {
+  //   setEditingUser(null);
+  //   setIsEditModalOpen(false);
+  // };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -83,6 +52,31 @@ export default function AdminVehicelTable() {
   };
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  const debouncedSearchQuery = useDebounce(searchTerm, 500); // 500ms debounce delay
+
+  useEffect(() => {
+    if (debouncedSearchQuery) {
+      // Perform the search API call or logic here
+      console.log('Searching for:', debouncedSearchQuery);
+
+      const handleSearch = async() => {
+        setCurrentPage(1); // Reset to the first page on a new search
+    const response = await apiClient.get(`/api/vehicle/fetchVehicles?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc&search=${debouncedSearchQuery}`)
+    console.log(response)
+    let user = response.data.data;
+    setSortedUsers(user);
+    setTotalPages(response.data.pagination.total)
+      }
+      handleSearch()
+
+
+
+
+    }
+  }, [debouncedSearchQuery]);
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(3)
   // const itemsPerPage = 3;
@@ -93,11 +87,11 @@ export default function AdminVehicelTable() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const displayedUsers = filteredUsers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const  [totalPages, setTotalPages] = useState(0)
+  // const displayedUsers = filteredUsers.slice(
+  //   (currentPage - 1) * itemsPerPage,
+  //   currentPage * itemsPerPage
+  // );
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc");
   const [sortedUsers, setSortedUsers] = useState(
@@ -107,56 +101,99 @@ export default function AdminVehicelTable() {
     )
   );
 
-  const handleSort = (column) => {
+  const handleSort = async(column) => {
     const direction =
       sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
     setSortColumn(column);
     setSortDirection(direction);
 
-    // Sort the users array
-    const sortedData = [...displayedUsers].sort((a, b) => {
-      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
-      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
-      return 0;
-    });
+    const response = await apiClient.get(`/api/vehicle/fetchVehicles?page=${currentPage}&limit=${itemsPerPage}&sortBy=${column}&sortOrder=${direction}`)
+    let user = response.data.data;
+    
 
-    setSortedUsers(sortedData);
+    setSortedUsers(user);
   };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setCurrentPage(1); // Reset to the first page on a new search
   };
+  const handleChange = (e, field, index = null) => {
+    const { name, value } = e.target;
+    if (index !== null) {
+      const updatedField = [...editingUser[field]];
+      updatedField[index][name] = value;
+      setEditingUser({ ...editingUser, [field]: updatedField });
+    } else {
+      setEditingUser({ ...editingUser, [name]: value });
+    }
+  };
 
+
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    // console.log(editingUser);
+    // eslint-disable-next-line no-unused-vars
+    let user = [editingUser].map(({driver, ...rest})=> rest)
+    user[0].currentLocation = JSON.stringify(user[0].currentLocation)
+    user[0].insurance = JSON.stringify(user[0].insurance)
+    // let user = {
+    //   id: editingUser.id,
+    //   driver: editingUser.driver,
+    //   license: editingUser.license,
+    //   plateNumber: editingUser.plateNumber,
+    //   vehicleModel: editingUser.vehicleModel,
+    //   vehicleType: editingUser.vehicleType,
+    //   workingHours: editingUser.workingHours,
+    //   insurance: editingUser.insurance,
+    //   // driver: editingUser.driver
+    // }
+    console.log(user)
+
+    const res = await apiClient.put(`/api/vehicle/updateVehicle/${editingUser.id}`, user[0])
+    console.log(res)
+  }
 
   const csvHeaders = [
     { label: "ID", key: "id" },
-    { label: "Driver Name", key: "fullName" },
-    { label: "Vehicle Type", key: "fullName" },
-    { label: "Vehicle Model", key: "fullName" },
-    { label: "License", key: "email" },
-    { label: "Plate Number", key: "fullName" },
-    { label: "Phone", key: "phone" },
+    { label: "Driver Name", key: "driverName" },
+    { label: "Vehicle Type", key: "vehicleType" },
+    { label: "Vehicle Model", key: "vehicleModel" },
+    { label: "License", key: "license" },
+    { label: "Plate Number", key: "plateNumber" },
+    { label: "Phone", key: "phoneNumber" },
   ];
 
+  const handleFetchVehicel = async()=>{
+    const response = await apiClient.get(`/api/vehicle/fetchVehicles?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc`)
+    console.log(response)
+    setSortedUsers(response.data.data);
+    setTotalPages(response.data.pagination.total)
+    const res = await apiClient.get("/api/driver/fetchDrivers?page=1&limit=8&sortBy=id&sortOrder=asc")
+      if (res.data.success == true){
+        // console.log(res.data.data)
+        // const a= res.data.data
+        setDrivers(res.data.data)
+  }}
 
   useEffect(()=>{
-    const column = "id"
+    // const column = "id"
     // setSortedUsers(filteredUsers.slice(
     //   (currentPage - 1) * itemsPerPage,
     //   currentPage * itemsPerPage
     // ))
-    const direction =
-      sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
-    setSortColumn(column);
-    setSortDirection(direction);
-    const sortedData = [...displayedUsers].sort((a, b) => {
-      if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
-      if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
-      return 0;
-    });
+    handleFetchVehicel()
+    // const direction =
+    //   sortColumn === column && sortDirection === "asc" ? "desc" : "asc";
+    // setSortColumn(column);
+    // setSortDirection(direction);
+    // const sortedData = [...displayedUsers].sort((a, b) => {
+    //   if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
+    //   if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
+    //   return 0;
+    // });
 
-    setSortedUsers(sortedData);
+    // setSortedUsers(sortedData);
 
   },[currentPage, searchTerm, itemsPerPage])
 
@@ -167,7 +204,7 @@ export default function AdminVehicelTable() {
         Vehicle
       </h1>
 
-      <DownloadCSVorPDF sortedUsers={sortedUsers} csvHeaders={csvHeaders} tableName={"Restaurant Table"} />
+      
 
       {/* Search Bar and Add Restaurant Button */}
       <div className="mb-4 flex justify-between items-center">
@@ -178,6 +215,7 @@ export default function AdminVehicelTable() {
           onChange={handleSearchChange}
           className="w-full px-4 py-2 text-gray-800 bg-white border rounded-md dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 mr-4"
         />
+        <DownloadCSVorPDF sortedUsers={sortedUsers} csvHeaders={csvHeaders} tableName={"Vehicle Table"} />
         <div className="flex justify-end mb-2">
         <NavLink to={'/vehicleform'}>
       <button className="px-4 py-2 whitespace-nowrap  flex justify-center text-center items-center  text-sm text-white bg-blue-600 rounded hover:bg-green-700">
@@ -214,7 +252,7 @@ export default function AdminVehicelTable() {
             </tr>
           </thead>
           <tbody>
-            {displayedUsers.map((user, index) => (
+            {sortedUsers.map((user, index) => (
               <tr
                 key={index}
                 className={`${
@@ -227,22 +265,22 @@ export default function AdminVehicelTable() {
                   {user.id}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.fullName}
+                  {user.driver.name}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.fullName}
+                  {user.vehicleType}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.email}
+                  {user.vehicleModel}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.fullName}
+                  {user.license}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.phone}
+                  {user.plateNumber}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.address}
+                  {user.driver.phoneNumber}
                 </td>
                 <td className="px-4 py-3">
                   <button 
@@ -346,71 +384,162 @@ export default function AdminVehicelTable() {
 
       {/* Edit Modal */}
       {isEditModalOpen && editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className=" fixed inset-0 z-50 flex  justify-center bg-black bg-opacity-50 overflow-y-scroll ">
           <div
-            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
+            className="mt-20 bg-gray-600 rounded-lg shadow-lg p-6 w-[700px] overflow-auto "
             onClick={(e) => e.stopPropagation()}
           >
+            <div className="flex justify-between">
             <h2 className="text-lg font-semibold text-white">Edit Food</h2>
+            <button onClick={()=>setIsEditModalOpen(false)}>X</button></div>
             <div className="mt-4">
+          <form onSubmit={handleSubmit} className="flex justify-between text-black dark:text-gray-400 space-y-4 space-x-4  max-w-full mx-auto p-6 border rounded-lg shadow-lg">
+              
+              <div>
+              <div>
+                  <label className="block text-sm font-medium">Vehicle Type</label>
+                  <select
+                    name="vehicleType"
+                    value={editingUser.vehicleType}
+                    onChange={(e) => handleChange(e, "vehicleType")}
+                    className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+                  >
+                    <option value="" disabled>
+                      Select Type
+                    </option>
+                    <option value="car">Car</option>
+                    <option value="motorcycle">Motorcycle</option>
+                    <option value="Bicycle">Bicycle</option>
+                    <option value="scooter">Scooter</option>
+                  </select>
+                </div>
+      
+                <div>
+                  <label className="block text-sm font-medium">Vehicle Type</label>
+                  <select
+                    name="driverId"
+                    value={editingUser.driverId}
+                    onChange={(e) => handleChange(e, "driverId")}
+                    className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+                  >
+                    <option value="" disabled>
+                      Select Type
+                    </option>
+                    {drivers.map((driver, index)=>(
+                      <option key={index} value={driver.id}>{driver.name}</option>
+                    ))}
+                  </select>
+                </div>
+            
+            <div>
+              <label className="block text-sm font-medium">Vehicle Model</label>
               <input
                 type="text"
-                name="foodName"
-                value={editingUser.foodName}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Food Name"
-              />
-              <input
-                type="text"
-                name="restaurantName"
-                value={editingUser.restaurantName}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Restaurant Name"
-              />
-              <input
-                type="text"
-                name="category"
-                value={editingUser.category}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Category"
-              />
-              <input
-                type="text"
-                name="price"
-                value={editingUser.price}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Price"
-              />
-              <input
-                type="text"
-                name="phone"
-                value={editingUser.phone}
-                onChange={handleEditChange}
-                className="w-full px-4 py-2 mb-4 text-gray-800 bg-white rounded"
-                placeholder="Phone"
+                name="vehicleModel"
+                value={editingUser.vehicleModel}
+                onChange={(e) => handleChange(e, 'vehicleModel')}
+                className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
               />
             </div>
-            <div className="flex justify-between mt-4">
-              <button
-                onClick={handleEditCancel}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleEditSave}
-                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-              >
-                Save
-              </button>
+            <div>
+              <label className="block text-sm font-medium">License</label>
+              <input
+                type="text"
+                name="license"
+                value={editingUser.license}
+                onChange={(e) => handleChange(e, 'license')}
+                className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+              />
             </div>
+            
+           
+            
+            </div>
+            <div>
+            <div>
+              <label className="block text-sm font-medium">Plate Number</label>
+              <input
+                type="text"
+                name="plateNumber"
+                value={editingUser.plateNumber}
+                onChange={(e) => handleChange(e, 'plateNumber')}
+                className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Working Hour</label>
+              <input
+                type="text"
+                name="workingHours"
+                value={editingUser.workingHours}
+                onChange={(e) => handleChange(e, 'workingHours')}
+                className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Insurance </label>
+              {editingUser.insurance.map((item, index) => (
+                <div key={index} className="flex space-x-2">
+                  <input
+                    type="text"
+                    name="key"
+                    placeholder="Key"
+                    value={item.key}
+                    onChange={(e) => handleChange(e, 'insurance', index)}
+                    className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                  />
+                  <input
+                    type="text"
+                    name="value"
+                    placeholder="Value"
+                    value={item.value}
+                    onChange={(e) => handleChange(e, 'insurance', index)}
+                    className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                  />
+                  
+                </div>
+              ))}
+              
+            </div>
+      
+      
+            {/* Repeat similar blocks for Phone, Ambiance, Website, Social Media, Cuisine Type, Address */}
+      
+            <div>
+              <label className="block text-sm font-medium">Current Location </label>
+              {editingUser.currentLocation.map((item, index) => (
+                <div key={index} className="flex space-x-2">
+                  <input
+                    type="text"
+                    name="long"
+                    placeholder="Longitude"
+                    value={item.long}
+                    onChange={(e) => handleChange(e, 'currentLocation', index)}
+                    className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                  />
+                  <input
+                    type="text"
+                    name="lat"
+                    placeholder="Latitude"
+                    value={item.lat}
+                    onChange={(e) => handleChange(e, 'currentLocation', index)}
+                    className="w-1/2 px-4 py-2 mt-2 border rounded-lg bg-white"
+                  />
+                  
+                </div>
+              ))}
+              
+            </div>
+      
+            <button type="submit" className="w-full py-3 bg-blue-500 text-white rounded-lg">
+              Submit
+            </button>
+            </div>
+          </form>
+          </div>
           </div>
         </div>
       )}
     </div>
   );
-}
+  }

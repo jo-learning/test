@@ -11,7 +11,6 @@ function SignUpForm() {
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState("user");
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -42,10 +41,7 @@ function SignUpForm() {
       setIsOpen(true);
     }
   };
-  const toggleMode = (newMode) => {
-    setMode(newMode);
-    setErrors({});
-  };
+  
 
   const closeModal = () => {
     setIsOpen(false);
@@ -79,7 +75,7 @@ function SignUpForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    // setLoading(true);
     validateForm();
     if (!validateForm()){
       return;
@@ -88,8 +84,8 @@ function SignUpForm() {
       {
         name: formData.name,
         email: formData.email,
-        username: formData.username,
-        phoneNumber: formData.countryCode + formData.phoneNumber,
+        // username: formData.username,
+        phoneNumber: formData.phoneNumber,
         address: formData.address,
         password: formData.password,
       },
@@ -119,9 +115,9 @@ function SignUpForm() {
     if (!formData.password) newErrors.password = "Password is required";
     if (formData.password !== formData.confirmPassword)
       newErrors.confirmPassword = "Passwords do not match";
-    if (!/^[97]\d{8}$/.test(formData.phoneNumber))
-      newErrors.phoneNumber =
-        "Phone number must be 10 digits and start with 9 or 7";
+    // if (!/^[97]\d{8}$/.test(formData.phoneNumber))
+    //   newErrors.phoneNumber =
+    //     "Phone number must be 10 digits and start with 9 or 7";
     if (!formData.termsAccepted)
       newErrors.termsAccepted = "You must accept the terms and conditions";
 
@@ -216,12 +212,12 @@ function SignUpForm() {
             ))}
           </select>
           <input
-            type="number"
+            type="text"
             placeholder="900000000"
             className="input-field mb-3 "
             value={formData.phoneNumber}
             onChange={(e) => {
-              setFormData({ ...formData, phoneNumber:  + e.target.value });
+              setFormData({ ...formData, phoneNumber:  e.target.value });
               setErrors({});
             }}
           />
