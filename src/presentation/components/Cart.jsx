@@ -194,7 +194,8 @@ const Table = () => {
   };
   const handleCheckout = async (e) => {
     e.preventDefault();
-    console.log(user);
+    // console.log(user);
+    console.log(data);
     let result = data.map((obj) => {
       let newObj = { ...obj }; // Create a shallow copy of the object
       delete newObj.id; // Remove the 'id' key
@@ -203,12 +204,13 @@ const Table = () => {
       delete newObj.price;
       return newObj; // Return the new object
     });
-    console.log(result);
+    // console.log(result);
     const order = {
       userId: user[0].id,
       recipientDetail: [formData],
       orderFoods: result,
     };
+    console.log(order)
     const response = await apiClient.post("/api/order/createOrder", order);
     console.log(response);
   };

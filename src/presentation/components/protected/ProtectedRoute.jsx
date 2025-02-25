@@ -48,7 +48,7 @@ const ProtectedRoute = ({ children }) => {
 
   // While authentication is being checked, show a loading state or nothing
   if (isAuthenticated === null) {
-    return <div>Loading...</div>; // Replace with a loading spinner if needed
+    return <div className=''>Loading...</div>; // Replace with a loading spinner if needed
   }
 
   // Render children if authenticated, otherwise redirect

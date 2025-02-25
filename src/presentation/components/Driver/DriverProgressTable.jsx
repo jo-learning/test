@@ -1,59 +1,59 @@
-import { useState } from "react";
-import { CiCirclePlus } from "react-icons/ci";
-import { NavLink } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import UserContext from "../../../shared/utils/UserContext";
+import { apiClient } from "../../../data/services/apiClient";
+import OrderDetailsModal from "./ui/OrderDetailsModal";
 
 export default function DriverProgressTable() {
-  const allUsers = [
-    {
-      id: "USR001",
-      restaurantName: "Shege",
-      foodName: "Special Burger",
-      category: "Burger",
-      phone: "123-456-7890",
-      price: "123",
-    },
-    {
-      id: "USR002",
-      foodName: "Special Pizza",
-      restaurantName: "Shege",
-      category: "Pizza",
-      phone: "987-654-3210",
-      price: "456",
-    },
-    {
-      id: "USR003",
-      foodName: "Special Pizza",
-      restaurantName: "Shege",
-      category: "Pizza",
-      phone: "555-123-4567",
-      price: "789",
-    },
-    {
-      id: "USR004",
-      foodName: "Bob Brown",
-      restaurantName: "Shege",
-      category: "Burger",
-      phone: "555-987-6543",
-      price: "321",
-    },
-    {
-      id: "USR005",
-      foodName: "Cathy White",
-      restaurantName: "Shege",
-      category: "Burger",
-      phone: "444-555-6666",
-      price: "300",
-    },
-  ];
-
+  const { user } = useContext(UserContext);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const itemsPerPage = 3;
 
-  const filteredUsers = allUsers.filter(
-    (user) =>
-      user.foodName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.restaurantName.toLowerCase().includes(searchTerm.toLowerCase())
+  const fetchPreparedOrder = async () => {
+    const response = await apiClient.get(`/api/order/fetchOrdersOfDrivers/onDelivery`);
+    setOrders(response.data.data);
+  };
+
+  useEffect(() => {
+    fetchPreparedOrder();
+  }, []);
+
+
+  const handleDone = async(order) => {
+    try{
+      setLoading(true);
+      const res = await apiClient.patch(`/api/order/changeOrderToCompleted/${order.id}/${user[0].id}`)
+    console.log(res)
+    fetchPreparedOrder();
+
+    }catch{
+      toast.error("something error")
+
+    }finally{
+      setLoading(false);
+    }
+    
+  }
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to the first page on a new search
+  };
+
+  const handleDetailClick = (order) => {
+    setSelectedOrder(order);
+    setIsModalOpen(true);
+  };
+
+  const filteredUsers = orders.filter(
+    (order) =>
+      order.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.user.address.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -62,30 +62,24 @@ export default function DriverProgressTable() {
     currentPage * itemsPerPage
   );
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to the first page on a new search
-  };
-
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">
         Ready table
       </h1>
 
-      {/* Search Bar and Add Restaurant Button */}
+      {/* Search Bar */}
       <div className="mb-4 flex justify-between items-center">
         <input
           type="text"
-          placeholder="Search by name or email..."
+          placeholder="Search by name or address..."
           value={searchTerm}
           onChange={handleSearchChange}
           className="w-full px-4 py-2 text-gray-800 bg-white border rounded-md dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 mr-4"
         />
-        
       </div>
 
-      {/* Users Table */}
+      {/* Orders Table */}
       <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
         <table className="min-w-full text-left">
           <thead className="bg-gray-200 dark:bg-gray-700">
@@ -94,25 +88,10 @@ export default function DriverProgressTable() {
                 ID
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Restaurant Phone
+                User Name
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Restaurant Name
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Restaurant Address
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                Time
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Customer Name
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Customer Phone
-              </th>
-              <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Customer Address
+                User Address
               </th>
               <th className="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Action
@@ -120,7 +99,7 @@ export default function DriverProgressTable() {
             </tr>
           </thead>
           <tbody>
-            {displayedUsers.map((user, index) => (
+            {displayedUsers.map((order, index) => (
               <tr
                 key={index}
                 className={`${
@@ -130,34 +109,28 @@ export default function DriverProgressTable() {
                 }`}
               >
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.id}
+                  {order.id}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.foodName}
+                  {order.user.name}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                {user.restaurantName}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.category}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.price}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.phone}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.phone}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-300">
-                  {user.phone}
+                  {order.user.address}
                 </td>
                 <td className="flex px-4 py-3">
-                  <button className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
-                    Done
+                  <button
+                  onClick={() => handleDone(order)}
+                  className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                  disabled={loading}
+                  >
+                    {loading ? "loading" : "Done"}
                   </button>
-                  
+                  <button
+                    onClick={() => handleDetailClick(order)}
+                    className="px-3 py-1 ml-2 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                  >
+                    Detail
+                  </button>
                 </td>
               </tr>
             ))}
@@ -193,6 +166,13 @@ export default function DriverProgressTable() {
           &gt;
         </button>
       </div>
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        order={selectedOrder}
+      />
     </div>
   );
 }

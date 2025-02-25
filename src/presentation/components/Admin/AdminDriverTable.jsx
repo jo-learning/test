@@ -164,7 +164,7 @@ export default function AdminDriverTable() {
     const response = await apiClient.get(
       `/api/driver/fetchDrivers?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc`
     );
-    // console.log(response);
+    console.log(response);
     setSortedUsers(response.data.data);
     setTotalPages(response.data.pagination.total);
   };

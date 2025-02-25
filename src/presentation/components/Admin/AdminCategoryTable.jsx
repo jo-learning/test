@@ -12,13 +12,16 @@ import useDebounce from "../lib/debounceSearch";
 export default function AdminCategoryTable() {
   const [loading, setLoading] = useState(false);
   const [allUsers, setAllUsers] =useState( [])
+  const [id , setId] = useState('');
 
   const [users, setUsers] = useState(allUsers);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
   const handleEditClick = (user) => {
+    setId(user.id);
     setEditingUser(user);
+    
     setIsEditModalOpen(true);
   };
 
@@ -62,6 +65,11 @@ export default function AdminCategoryTable() {
       toast.error("try again")
     }
   } 
+
+  const handleUpdate = async() => {
+    const data = await apiClient.put(`/api/category/updateCategory/${id}`, {name:editingUser.name});
+    console.log(data);
+  }
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -433,7 +441,7 @@ export default function AdminCategoryTable() {
               Cancel
             </button>
             <button
-              onClick={handleSubmit}
+              onClick={handleUpdate}
               className="ml-2 px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
               disabled={loading}
             >

@@ -2,19 +2,37 @@ import { useState, useEffect } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { NavLink } from "react-router-dom";
 import { apiClient } from "../../../data/services/apiClient";
+import { toast } from "react-toastify";
 
 export default function RestaurantFoodTable() {
   // const [allUsers, setAllUsers] = useState([]);
   const [users, setUsers] = useState([]);
   // const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   // const [editingUser, setEditingUser] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 3;
   const [totalCount, setTotalCount] = useState(0); // To store the total count of users
+  const [id, setID] = useState("");
 
   // Fetch users from API with pagination, sorting, and search parameters
+
+  const handleDelete = async () => {
+    try {
+      setLoading(true);
+      const res = await apiClient.delete(`/api/food/deleteFood/${id}`);
+      const data = await res.json();
+      console.log(data);
+      toast.success("succfully deleted")
+    } catch {
+      toast.error("something wrong try again")
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -22,10 +40,12 @@ export default function RestaurantFoodTable() {
         //   // `http://localhost:3010/api/food/fetchFoods?page=${currentPage}&limit=${itemsPerPage}&sortBy=foodName&sortOrder=asc&search=${searchTerm}`
         //   `http://localhost:3010/api/food/fetchFoods?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc`
         // );
-        const response = await apiClient.get(`/api/food/fetchFoods?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc`)
+        const response = await apiClient.get(
+          `/api/food/fetchFoods?page=${currentPage}&limit=${itemsPerPage}&sortBy=id&sortOrder=asc`
+        );
         if (response.data.success) {
           const data = await response.data;
-          console.log(data)
+          console.log(data);
           // setAllUsers(data.data); // Assuming the API returns an 'items' array
           setTotalCount(data.data.length); // Assuming the API returns a 'totalCount'
           setUsers(data.data);
@@ -64,7 +84,11 @@ export default function RestaurantFoodTable() {
   //   setIsEditModalOpen(false);
   // };
 
-  const toggleModal = () => {
+  const toggleModal = (id) => {
+    setID(id);
+    setIsModalOpen(!isModalOpen);
+  };
+  const toggleModals = () => {
     setIsModalOpen(!isModalOpen);
   };
 
@@ -170,7 +194,7 @@ export default function RestaurantFoodTable() {
                     Edit
                   </button>
                   <button
-                    onClick={toggleModal}
+                    onClick={() => toggleModal(user.id)}
                     className="ml-2 px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
                   >
                     Delete
@@ -212,6 +236,39 @@ export default function RestaurantFoodTable() {
       </div>
 
       {/* Modal logic and edit modal omitted for brevity */}
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={toggleModals} // Close the modal when clicking outside
+        >
+          {/* Modal Content */}
+          <div
+            className="bg-gray-600 rounded-lg shadow-lg p-6 w-96"
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the modal
+          >
+            <h2 className="text-lg font-semibold text-white">Are you sure?</h2>
+            <p className="mt-2 text-white">
+              Do you really want to delete this item? This action cannot be
+              undone.
+            </p>
+            <div className="flex justify-between mt-4">
+              <button
+                onClick={toggleModal}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete()}
+                className="ml-2 px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"
+                disabled={loading}
+              >
+                {loading ? "loading ..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

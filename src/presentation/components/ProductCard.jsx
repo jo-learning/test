@@ -15,10 +15,12 @@ function ProductCard({ product }) {
       const conditon = formData.some((obj) => obj.id === product.id);
       if (!conditon) {
         addCounter();
+        
         addData(product);
       }
     } else {
       addCounter();
+     
       addData(product);
     }
   };

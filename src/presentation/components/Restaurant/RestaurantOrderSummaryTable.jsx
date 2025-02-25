@@ -123,7 +123,7 @@ name.push(result.data.data.name);
     const fetchOrders = async () => {
       console.log(user);
       const response = await apiClient.get(
-        `/api/order/fetchOrderOfARestaurant/${user[0].id}`
+        `/api/order/fetchOrderOfARestaurant`
       );
       // const data = await response.json();
       console.log(response);

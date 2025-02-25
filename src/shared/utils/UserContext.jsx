@@ -34,9 +34,9 @@ export const UserProvider = ({ children }) => {
 
     const data = await response.json();
     // const data = await apiClient.get('/api/user/verifyRole')
-    // console.log(data.data);
+    // console.log(data.data.role);
 
-    if (data.data == "user") {
+    if (data.data.role == "user") {
       setIsAuthenticated(true);
       return true;
     } else {
@@ -66,14 +66,14 @@ export const UserProvider = ({ children }) => {
       credentials: "include",
     });
     const data = await response.json();
-    // console.log(data.data);
+    console.log(data.data.role);
 
-    if (data.data == "user") {
+    if (data.data.role == "user") {
       setIsAuthenticated(true);
       return true;
-    }else if(data.data == "driver"){
+    }else if(data.data.role == "driver"){
       return true;
-    }else if (data.data == "restaurant"){
+    }else if (data.data.role == "restaurant"){
       return true;
     } else {
       setIsAuthenticated(false);
@@ -86,15 +86,15 @@ export const UserProvider = ({ children }) => {
   };
 
   const checkDriver = async () => {
-    const response = await fetch("http://localhost:3010/api/user/verifyRole", {
+    const response = await fetch(`${apiURL}api/user/verifyRole`, {
       headers: {'Content-Type': 'application/json'},
       method: 'GET',
       credentials: "include",
     });
     const data = await response.json();
-    // console.log(data.data)
+    // console.log(data.data.role)
 
-    if (data.data == "driver") {
+    if (data.data.role == "driver") {
       // setIsAuthenticated(true);
       return true;
     } else {
@@ -104,15 +104,15 @@ export const UserProvider = ({ children }) => {
   };
 
   const checkRestaurant = async () => {
-    const response = await fetch("http://localhost:3010/api/user/verifyRole", {
+    const response = await fetch(`${apiURL}api/user/verifyRole`, {
       headers: {'Content-Type': 'application/json'},
       method: 'GET',
       credentials: "include",
     });
     const data = await response.json();
-    // console.log(data.data)
+    // console.log(data.data.role)
 
-    if (data.data == "restaurant") {
+    if (data.data.role == "restaurant") {
       // setIsAuthenticated(true);
       return true;
     } else {
@@ -123,15 +123,15 @@ export const UserProvider = ({ children }) => {
 
 
   const checkAdmin = async () => {
-    const response = await fetch("http://localhost:3010/api/user/verifyRole", {
+    const response = await fetch(`${apiURL}api/user/verifyRole`, {
       headers: {'Content-Type': 'application/json'},
       method: 'GET',
       credentials: "include",
     });
     const data = await response.json();
-    // console.log(data.data)
+    // console.log(data.data.role)
 
-    if (data.data == "admin") {
+    if (data.data.role == "admin") {
       // setIsAuthenticated(true);
       return true;
     } else {

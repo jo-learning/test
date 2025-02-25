@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+// imsport React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { LuLayoutDashboard } from "react-icons/lu";
-import { MdOutlineRestaurant, MdOutlineFamilyRestroom } from "react-icons/md";
+// import { MdOutlineRestaurant, MdOutlineFamilyRestroom } from "react-icons/md";
 
 
 const DashboardLayout = ({ children }) => {
@@ -33,7 +33,7 @@ const DashboardLayout = ({ children }) => {
                 {"Orders"}
               </NavLink>
             </li>
-            <li>
+            {/* <li>
               <NavLink
                 to="/progresstable"
                 className={({ isActive }) =>
@@ -62,7 +62,7 @@ const DashboardLayout = ({ children }) => {
                 </span>
                 {"Delivered"}
               </NavLink>
-            </li>
+            </li> */}
           </ul>
         </div>
       </div>

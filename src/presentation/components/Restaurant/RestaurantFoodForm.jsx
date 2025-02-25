@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 // import { CiCirclePlus } from "react-icons/ci";
 import { FaMinusCircle, FaPlusCircle } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { apiClient } from "../../../data/services/apiClient";
+import UserContext from "../../../shared/utils/UserContext";
 
 const FoodForm = () => {
   const [formData, setFormData] = useState({
@@ -15,10 +16,30 @@ const FoodForm = () => {
     ingredients: [{ value: "" }],
   });
   const [category, setCategory] = useState([]);
+  const {user } = useContext(UserContext);
 
   const [last, setLast] = useState({
     ingredients: 0,
   });
+
+  const [previewUrl, setPreviewUrl] = useState(null); // Store the preview URL
+  const [image, setImage] = useState(null);
+
+  // Handle file input change
+  const handleFileChange = (event) => {
+    const file = event.target.files[0]; // Get the selected file
+    if (file) {
+      setImage(file);
+
+      // Generate a preview URL
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewUrl(reader.result); // Set the preview URL
+        console.log("ready");
+      };
+      reader.readAsDataURL(file); // Read the file as a data URL
+    }
+  };
 
   const handleChange = (e, field, index = null) => {
     const { name, value } = e.target;
@@ -70,8 +91,25 @@ const FoodForm = () => {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
+
+    console.log(image);
+    const price = parseFloat(formData.price);
+    const formData1 = new FormData();
+    formData1.append("image", image);
+    formData1.append("name", formData.name);
+    formData1.append("categoryId", formData.categoryId);
+    formData1.append("price", price);
+    formData1.append("description", formData.description);
+    formData1.append("restaurantId", user[0].id);
+    formData1.append("ingredients[]", JSON.stringify(formData.ingredients));
+    
     console.log(formData);
-    const response = await apiClient.post("/api/food/addFood", formData);
+    // const response = await apiClient.post("/api/food/addFood", formData);
+    const response = await apiClient.post("/api/food/addFood", formData1, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     console.log(response)
     
   };
@@ -145,7 +183,18 @@ const FoodForm = () => {
 
           <div>
             <label className="block text-sm font-medium">Image</label>
-            <div className="h-[200px] w-[200px] bg-gray-400 rounded-lg"></div>
+            <div className="h-[200px] w-[200px] bg-gray-400 rounded-lg">
+              {previewUrl && (
+                <div>
+                  {/* <h2>Image Preview:</h2> */}
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    style={{ maxWidth: "100%", maxHeight: "300px" }}
+                  />
+                </div>
+              )}
+            </div>
             <p>
               Upload a JPG or PNG image with dimension 291x194 pixel.<br></br>{" "}
               Maximum file size: 1 MB
@@ -153,7 +202,7 @@ const FoodForm = () => {
             <input
               type="file"
               name="image"
-              onChange={(e) => handleChange(e, "image")}
+              onChange={(e) => handleFileChange(e)}
               className="w-full px-4 py-2 mt-2 border rounded-lg bg-white"
             />
           </div>

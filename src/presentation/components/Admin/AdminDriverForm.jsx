@@ -11,6 +11,7 @@ const DriverForm = () => {
     username: "",
     // workingHours: [{ key: "", value: "" }],
     password: "",
+    // role: "admin"
     // confirmpassword: "",
   });
   const [confirmpassword, setConfirmPassword] = useState('')
@@ -62,6 +63,7 @@ const DriverForm = () => {
     formData1.append("phoneNumber", formData.phoneNumber);
     formData1.append("sex", formData.sex);
     formData1.append("username", formData.username);
+    formData1.append("role", "admin");
     
 
 
