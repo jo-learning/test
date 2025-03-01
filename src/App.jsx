@@ -37,7 +37,7 @@ import RestaurantPage from "./presentation/pages/Restaurant";
 // import AuthContext from "./shared/utils/AuthContext";
 import { UserProvider } from "./shared/utils/UserContext.jsx";
 
-import ProtectedRoute from "./presentation/components/protected/ProtectedRoute";
+import ProtectedAdminRoute from "./presentation/components/protected/ProtectedAdminRoute";
 import ProtectedDriverRoute from "./presentation/components/protected/ProtectedDriverRoute.jsx";
 import ProtectedRestaurantRoute from "./presentation/components/protected/ProtectedRestaurantRoute.jsx";
 import OrderTablePage from "./presentation/pages/User/OrdersTable.jsx";
@@ -77,89 +77,89 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute >
+              <ProtectedAdminRoute >
                 <DashboardPage />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route
             path="/ordersummary"
             element={
-              <ProtectedRoute>
+              <ProtectedAdminRoute>
                 <OrderSummaryTable />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route
             path="/customertable"
             element={
-              <ProtectedRoute >
+              <ProtectedAdminRoute >
                 <CustomersTable />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route
             path="/resturanttable"
             element={
-              <ProtectedRoute >
+              <ProtectedAdminRoute >
                 <ResturantsTable />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route
             path="/resturantform"
             element={
-              <ProtectedRoute >
+              <ProtectedAdminRoute >
                 <ResturantsForm />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route
             path="/drivertable"
             element={
-              <ProtectedRoute >
+              <ProtectedAdminRoute >
                 <DriversTable />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route
             path="/order"
             element={
-              <ProtectedRoute >
+              <ProtectedAdminRoute >
                 <OrderTablePage />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route
             path="/categorytable"
             element={
-              <ProtectedRoute >
+              <ProtectedAdminRoute >
                 <CategoriesTable />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route
             path="/vehicletable"
             element={
-              <ProtectedRoute >
+              <ProtectedAdminRoute >
                 <VehiclesTable />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route
             path="/vehicleform"
             element={
-              <ProtectedRoute >
+              <ProtectedAdminRoute >
                 <VehiclesForm />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route
             path="/driverform"
             element={
-              <ProtectedRoute >
+              <ProtectedAdminRoute >
                 <DriversForm />
-              </ProtectedRoute>
+              </ProtectedAdminRoute>
             }
           />
           <Route

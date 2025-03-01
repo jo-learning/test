@@ -77,7 +77,7 @@ function SignInForm() {
         LoggedInUser({ token: res.data.accessToken });
         toast.success(res.data.message);
         checkUser();
-        if (user == "user") {
+        if (user == "admin") {
           navigate("/dashboard");
         } else {
           navigate("/readytable");
@@ -93,7 +93,7 @@ function SignInForm() {
         LoggedInUser({ token: data.accessToken });
         toast.success(data.message);
         checkUser();
-        if (user == "user") {
+        if (user == "admin") {
           
           navigate("/dashboard");
         } else {

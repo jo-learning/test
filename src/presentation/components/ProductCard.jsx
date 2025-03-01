@@ -29,7 +29,7 @@ function ProductCard({ product }) {
        {/* eslint-disable-next-line react/prop-types */}
       <NavLink to={`/detail/${product.id}`} className={'text-black '}>
       {/* eslint-disable-next-line react/prop-types */}
-      <img src={'https://via.placeholder.com/150'} alt={product.name} className="w-full h-40" />
+      <img src={'/image/image.jpg'} alt={product.name} className="w-full h-40" />
       {/* eslint-disable-next-line react/prop-types */}
       <h3 className="text-lg mt-4 px-4">{product.name}</h3>
       <p className="text-primary text-xl font-bold px-4">

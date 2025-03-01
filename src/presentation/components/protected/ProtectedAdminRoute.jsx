@@ -24,7 +24,7 @@ import { Navigate } from 'react-router-dom';
 import UserContext from '../../../shared/utils/UserContext';
 
 // eslint-disable-next-line react/prop-types
-const ProtectedRoute = ({ children }) => {
+const ProtectedAdminRoute = ({ children }) => {
   const { checkAdmin } = useContext(UserContext);
   const [isAuthenticated, setIsAuthenticated] = useState(null); // Initially null to indicate loading
 
@@ -55,5 +55,5 @@ const ProtectedRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/" />;
 };
 
-export default ProtectedRoute;
+export default ProtectedAdminRoute;
 

@@ -75,6 +75,8 @@ export const UserProvider = ({ children }) => {
       return true;
     }else if (data.data.role == "restaurant"){
       return true;
+    } else if (data.data.role == "admin"){
+      return true;
     } else {
       setIsAuthenticated(false);
       return false;
