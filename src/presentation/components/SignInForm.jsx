@@ -14,7 +14,7 @@ function SignInForm() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const { user, LoggedInUser, checkUser } = useContext(UserContext);
+  const { user, LoggedInUser, checkUser, checkAdmin } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState("user");
 
@@ -76,8 +76,9 @@ function SignInForm() {
       if (res.data.success) {
         LoggedInUser({ token: res.data.accessToken });
         toast.success(res.data.message);
-        checkUser();
-        if (user == "admin") {
+        await checkUser();
+        console.log(user)
+        if (checkAdmin) {
           navigate("/dashboard");
         } else {
           navigate("/readytable");
